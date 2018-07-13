@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DChargeReaderDao">
+  
+    <select id="readChargeOnline"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+	    SELECT
+			t1.requestno requestNo,
+			t1.platformuserno platformUserNo,
+			IFNULL(tcm.userRole,tei.userRole) userRole,
+			t1.memberid memberId,
+			t1.amount,
+			t1.rechargestatus,
+			t1.rechargeway,
+			t1.gmt_create,
+			t1.gmt_modify
+		FROM
+			custody_shbk.t_recharge t1
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON t1.platformuserno = tcm.platformUserNo
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON t1.platformuserno = tei.platformUserNo						
+		WHERE 1=1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t1.gmt_modify >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t1.gmt_modify < #{endTime} ]]>
+		</if>	
+		AND (
+			tcm.isImportUserActivate = 'true'
+			OR tei.isImportUserActivate = 'true'
+		)							
+		ORDER BY								
+			t1.gmt_create							
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	<select id="readChargeOffline"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      	SELECT
+			a.request_no,
+			IFNULL(b.memberId,tei.memberId) memberId,
+			a.target_platform_user_no platformUserNo,
+			a.amount,
+			a.create_time,
+			c.modified_time,
+			IFNULL(b.userRole,tei.userRole) userRole
+		FROM
+			custody_shbk.t_business_details a
+		LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.target_platform_user_no = b.platformUserNo
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON a.target_platform_user_no = tei.platformUserNo
+		LEFT JOIN (
+			SELECT
+				request_no,
+				modified_time
+			FROM
+				custody_shbk.t_transaction_details
+			WHERE
+				`status` = 'PAY_SUCCESS'
+			AND trade_type = 'MARKETING'
+			<if test="beginTime!=null">
+				<![CDATA[ AND modified_time >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND modified_time < #{endTime} ]]>
+			</if>
+		) c ON a.request_no = c.request_no
+		WHERE
+			a.biz_type = 'ALTERNATIVE_RECHARGE'
+		AND c.modified_time IS NOT NULL
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  
+
+</mapper>

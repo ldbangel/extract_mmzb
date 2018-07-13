@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DMemberBalanceReaderDao">
+
+    <select id="readBalanceFromInvest"  resultType="com.kejin.extract.entity.kejinTest.DMemberBalanceModel">
+      <![CDATA[ 
+     	SELECT
+			DATE_FORMAT(curdate(),'%Y%m%d') settleDate,
+			a.memberId,
+			a.platformUserNo,
+			a.authName,
+			a.phoneNo phoneNum,
+			'INVESTOR' userRole,
+			a.amount creditNumbers,
+			IFNULL(tb.b_amount, 0) blockedFund,
+			vrr.VERIFY_ENTITY rFriendCode,
+			tcb1.realName rAuthName,
+			tmi1.IDENTITY rPhoneNum,
+			mi2.MEMBER_ID rMemberId
+		FROM
+			(
+				SELECT
+					ab.MEMBER_ID memberId,
+					ab.platformUserNo,
+					ab.authName,
+					ab.phoneNo,
+					sum(ab.NUMBERS) amount
+				FROM
+					(
+						SELECT
+							a.SUBJECT_NO,
+							a.MEMBER_ID,
+							a.NUMBERS NUMBERS,
+							IFNULL(
+								tcm.realName,
+								tei.enterpriseName
+							) authName,
+							IFNULL(
+								tcm.platformUserNo,
+								tei.platformUserNo
+							) platformUserNo,
+							tmi.IDENTITY phoneNo
+						FROM
+							invest.t_credit a
+						LEFT JOIN invest.t_invest_subject b ON a.SUBJECT_NO = b.SUBJECT_NO
+						LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON a.MEMBER_ID = tcm.memberId
+						LEFT JOIN custody_shbk.t_enterprise_info tei ON a.MEMBER_ID = tei.memberId
+						LEFT JOIN member.tm_member_identity tmi ON tmi.MEMBER_ID = a.MEMBER_ID
+						AND tmi.IDENTITY_TYPE IN ('1', '2')
+						WHERE
+							a.SUBJECT_NO <> '20160120211743S10001'
+						AND b. STATUS IN ('05', '08', '10', '15')
+						AND a.NUMBERS > 0
+						AND a.SUBJECT_NO != a.MEMBER_ID
+						AND (
+							(
+								tcm.`status` = '1'
+								AND tcm.userRole = 'INVESTOR'
+							)
+							OR (
+								tei.`status` = '1'
+								AND tei.userRole = 'INVESTOR'
+							)
+						)
+					) ab
+				GROUP BY
+					ab.MEMBER_ID
+			) a
+		LEFT JOIN (
+			SELECT
+				vr.MEMBER_ID,
+				ve.VERIFY_ENTITY
+			FROM
+				member.tr_verify_ref vr,
+				member.tr_verify_entity ve
+			WHERE
+				vr.VERIFY_ENTITY_ID = ve.VERIFY_ENTITY_ID
+			AND ve.VERIFY_TYPE = 20
+		) vrr ON vrr.member_id = a.memberId
+		LEFT JOIN member.tm_member_identity mi2 ON mi2.IDENTITY = vrr.VERIFY_ENTITY
+		AND mi2.IDENTITY_TYPE = 3
+		LEFT JOIN member.tm_member_identity tmi1 ON tmi1.MEMBER_ID = mi2.MEMBER_ID
+		AND tmi1.IDENTITY_TYPE IN ('1', '2')
+		LEFT JOIN custody_shbk.tr_custody_bankinfo tcb1 ON mi2.MEMBER_ID = tcb1.memberId
+		AND tcb1.bindCardFlag IN ('0', '2')
+		LEFT JOIN (
+			SELECT
+				MEMBER_ID,
+				sum(AMOUNT) b_amount
+			FROM
+				invest.t_bid_order
+			WHERE
+				STATUS = 'PAY_SUCCESS'
+			GROUP BY
+				MEMBER_ID
+		) tb ON tb.MEMBER_ID = a.memberId
+		GROUP BY
+			memberId
+      ]]> 
+  	</select>
+  	
+  	<select id="readBalanceFromSettle" resultType="com.kejin.extract.entity.kejinTest.DMemberBalanceModel">
+  		SELECT
+			DATE_FORMAT(tsb.settle_date, '%Y%m%d') settleDate,
+			tsb.platformUserNo,
+			tsb.balance,
+			IFNULL(tcm.memberId, tei.memberId) memberId,
+			IFNULL(
+				tcm.realName,
+				tei.enterpriseName
+			) authName,
+			tmi.IDENTITY phoneNum,
+			IFNULL(tcm.userRole, tei.userRole) userRole,
+			tcb1.realName rAuthName,
+			mi2.MEMBER_ID rMemberId,
+			tmi1.IDENTITY rPhoneNum,
+			vrr.VERIFY_ENTITY rFriendCode
+		FROM
+			custody_shbk.t_settle_balance tsb
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON tsb.platformUserNo = tcm.platformUserNo
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON tei.platformUserNo = tsb.platformUserNo
+		LEFT JOIN member.tm_member_identity tmi ON tmi.MEMBER_ID = tcm.memberId
+		AND tmi.IDENTITY_TYPE IN ('1', '2')
+		LEFT JOIN (
+			SELECT
+				vr.MEMBER_ID,
+				ve.VERIFY_ENTITY
+			FROM
+				member.tr_verify_ref vr,
+				member.tr_verify_entity ve
+			WHERE
+				vr.VERIFY_ENTITY_ID = ve.VERIFY_ENTITY_ID
+			AND ve.VERIFY_TYPE = 20
+		) vrr ON vrr.member_id = tcm.memberId
+		LEFT JOIN member.tm_member_identity mi2 ON mi2.IDENTITY = vrr.VERIFY_ENTITY
+		AND mi2.IDENTITY_TYPE = 3
+		LEFT JOIN member.tm_member_identity tmi1 ON tmi1.MEMBER_ID = mi2.MEMBER_ID
+		AND tmi1.IDENTITY_TYPE IN ('1', '2')
+		LEFT JOIN custody_shbk.tr_custody_bankinfo tcb1 ON mi2.MEMBER_ID = tcb1.memberId
+		AND tcb1.bindCardFlag IN ('0', '2')
+		WHERE
+			tsb.settle_date = DATE_FORMAT(
+				SUBDATE(curdate(), INTERVAL 1 DAY),
+				'%Y%m%d'
+			)
+		AND tsb.balance > 0
+		GROUP BY
+			platformUserNo
+  	</select>
+  	
+  
+
+</mapper>

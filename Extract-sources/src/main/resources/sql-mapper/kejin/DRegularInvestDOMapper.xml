@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DRegularInvestDao">
+    
+  	<sql id="Base_Column_List" >        
+		bidOrderNo,
+		memberId,
+		subjectNo,
+		subjectName,
+		subjectLife,
+		subjectType,
+		rate,
+		repayType,
+		amount,
+		operationType,
+		operationDate,
+		operationStatus,
+		GMT_CREATE,
+		GMT_MODIFIED,
+		platform     
+ 	</sql>
+  
+ 	<select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DRegularInvestModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_regular_invest
+       where 1=1 
+       <if test="bidOrderNos != null and bidOrderNos.size() > 0" >
+          AND bidOrderNo in 
+            <foreach collection="bidOrderNos" item="bidOrderNo" open="(" separator="," close=")">
+			   #{bidOrderNo}
+            </foreach> 
+       </if>  
+  	</select>
+
+	<select id="selectByRangeTime" resultType="com.kejin.extract.entity.kejinTest.DRegularInvestModel">
+		select
+		<include refid="Base_Column_List" />
+		from d_regular_invest
+		where operationDate>#{startDate} AND operationDate&lt;=#{endDate}
+	</select>
+	
+	<select id="selectBidFailByRangeTime" resultType="com.kejin.extract.entity.kejinTest.DRegularInvestModel">
+		SELECT
+			<include refid="Base_Column_List" />
+		FROM 
+			d_regular_invest
+		WHERE operationStatus = 'BID_FAIL' 
+		AND	GMT_MODIFIED > #{startDate} 
+		AND GMT_MODIFIED &lt;= #{endDate}
+	</select>
+
+
+	<insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DRegularInvestModel" >
+	    INSERT INTO `d_regular_invest` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{bidOrderNo,jdbcType=VARCHAR},
+		    #{memberId,jdbcType=VARCHAR},
+			#{subjectNo,jdbcType=VARCHAR},
+			#{subjectName,jdbcType=VARCHAR},
+			#{subjectLife,jdbcType=VARCHAR},
+			#{subjectType,jdbcType=VARCHAR},
+			#{rate,jdbcType=DECIMAL},
+			#{repayType,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{operationType,jdbcType=VARCHAR},
+			#{operationDate,jdbcType=TIMESTAMP},  
+			#{operationStatus,jdbcType=VARCHAR}, 
+		    now(),
+		    now(),
+		    #{platform,jdbcType=VARCHAR}
+		) ;	  
+  </insert> 
+  
+  <insert id="insertList" parameterType="java.util.List">
+		INSERT INTO `d_regular_invest` (
+		<include refid="Base_Column_List" />
+		)
+		VALUES
+		<foreach collection="regularInvestModels" item="model" index="index" separator=",">
+			(#{model.bidOrderNo,jdbcType=VARCHAR},
+		    #{model.memberId,jdbcType=VARCHAR},
+			#{model.subjectNo,jdbcType=VARCHAR},
+			#{model.subjectName,jdbcType=VARCHAR},
+			#{model.subjectLife,jdbcType=VARCHAR},
+			#{model.subjectType,jdbcType=VARCHAR},
+			#{model.rate,jdbcType=DECIMAL},
+			#{model.repayType,jdbcType=VARCHAR},
+			#{model.amount,jdbcType=DECIMAL},
+			#{model.operationType,jdbcType=VARCHAR},
+			#{model.operationDate,jdbcType=TIMESTAMP},  
+			#{model.operationStatus,jdbcType=VARCHAR}, 
+		    now(),
+		    now(),
+		    #{platform,jdbcType=VARCHAR}
+		  	)
+		</foreach>
+ 	</insert>
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DRegularInvestModel" >
+		update `d_regular_invest`
+			set
+			<if test="subjectNo!=null">	
+				subjectNo =#{subjectNo,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectName!=null">	
+				subjectName= #{subjectName,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectLife!=null">	
+				subjectLife= #{subjectLife,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectType!=null">	
+				subjectType =#{subjectType,jdbcType=VARCHAR},
+			</if>
+			<if test="rate!=null">	
+				rate =#{rate,jdbcType=DECIMAL},
+			</if>
+			<if test="repayType!=null">	
+				repayType =#{repayType,jdbcType=VARCHAR},
+			</if>
+			<if test="amount!=null">	
+				amount=#{amount,jdbcType=DECIMAL},
+			</if>
+			<if test="operationType!=null">	
+				operationType=#{operationType,jdbcType=VARCHAR},			
+			</if>
+			<if test="operationDate!=null">				
+				operationDate=#{operationDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operationStatus!=null">				
+				operationStatus=#{operationStatus,jdbcType=VARCHAR},
+			</if>				
+     	GMT_MODIFIED = now()
+	    WHERE bidOrderNo = #{bidOrderNo,jdbcType=VARCHAR}
+  </update> 
+  
+</mapper>

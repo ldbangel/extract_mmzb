@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DLoanReaderDao">
+
+    <select id="readFromLoanCreate"  resultType="com.kejin.extract.entity.kejinTest.DLoanModel">
+     <!--  <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      	SELECT
+			a.*, b.SUBMIT_MEMBER_ID memberId
+		FROM
+			(
+				SELECT
+					ri.REPAY_SCHED_ID repaySchedId,
+					ri.UNPAID_PRINCIPAL unpaidPrincipal,
+					ri.UNPAID_INTEREST unpaidInterest,
+					ri.PAID_PRINCIPAL paidPrincipal,
+					ri.PAID_INTEREST paidInterest,
+					ri.TERM_NUM termNum,
+					ri.`STATUS` status,
+					ri.PLANNING_REPAY_DATE planRepayDate,
+					ri.ACTUAL_REPAY_DATE actualRepayDate,
+					ri.GMT_CREATED createTime,
+					ri.GMT_MODIFIED repayTime,
+					rr.LOAN_PROJ_NO loanProjNo
+				FROM
+					loan.T_RS_INSTALLMENT ri
+				LEFT JOIN loan.t_rs_repayment_sched rr ON ri.REPAY_SCHED_ID = rr.ID
+				WHERE
+					ri.REPAY_SCHED_ID != 510
+				<if test="beginTime!=null">
+					<![CDATA[ AND ri.GMT_CREATED >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND ri.GMT_CREATED < #{endTime} ]]>
+				</if>	
+			) a
+		LEFT JOIN loan.t_ls_project b ON b.LOAN_PROJ_NO = a.loanProjNo
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	<select id="readFromLoanModified"  resultType="com.kejin.extract.entity.kejinTest.DLoanModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      	SELECT
+			a.*, b.SUBMIT_MEMBER_ID memberId
+		FROM
+			(
+				SELECT
+					ri.REPAY_SCHED_ID repaySchedId,
+					ri.UNPAID_PRINCIPAL unpaidPrincipal,
+					ri.UNPAID_INTEREST unpaidInterest,
+					ri.PAID_PRINCIPAL paidPrincipal,
+					ri.PAID_INTEREST paidInterest,
+					ri.TERM_NUM termNum,
+					ri.`STATUS` status,
+					ri.PLANNING_REPAY_DATE planRepayDate,
+					ri.ACTUAL_REPAY_DATE actualRepayDate,
+					ri.GMT_CREATED createTime,
+					ri.GMT_MODIFIED repayTime,
+					rr.LOAN_PROJ_NO loanProjNo
+				FROM
+					loan.T_RS_INSTALLMENT ri
+				LEFT JOIN loan.t_rs_repayment_sched rr ON ri.REPAY_SCHED_ID = rr.ID
+				WHERE
+					ri.REPAY_SCHED_ID != 510
+				<if test="beginTime!=null">
+					<![CDATA[ AND ri.GMT_MODIFIED >= #{beginTime} AND ri.GMT_CREATED < #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND ri.GMT_MODIFIED < #{endTime} ]]>
+				</if>	
+			) a
+		LEFT JOIN loan.t_ls_project b ON b.LOAN_PROJ_NO = a.loanProjNo
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+</mapper>

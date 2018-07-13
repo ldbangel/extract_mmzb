@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DUserReaderDao">
+    
+    <select id="readFromMemberInfo"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+     	SELECT
+			m.MEMBER_ID,
+			m.CREATE_TIME
+		FROM
+			member.tm_member m
+		WHERE m.CREATE_TIME >= #{beginTime}
+		AND m.CREATE_TIME < #{endTime}
+	  ]]>	
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	<select id="readFromMemberIdentity" resultType="Map">
+       <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+       <![CDATA[ 
+     	SELECT
+			i.identity,
+			i.IDENTITY_TYPE,
+			i.MEMBER_ID
+		FROM
+			member.tm_member_identity i
+		WHERE
+			i.CREATE_TIME >= #{beginTime} 
+		AND i.CREATE_TIME < #{endTime}
+       ]]> 
+       <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	<select id="readFromVerify"  resultType="Map">
+       <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+       <![CDATA[ 
+     	SELECT DISTINCT
+			s.MEMBER_ID,
+			s1.VERIFY_ENTITY
+		FROM
+			member.tr_verify_ref s
+		LEFT JOIN member.tr_verify_entity s1 ON s.VERIFY_ENTITY_ID = s1.verify_entity_id
+		WHERE
+			s1.VERIFY_TYPE = '20'
+		AND s.CREATE_TIME >= #{beginTime} 
+		AND s.CREATE_TIME < #{endTime}
+       ]]> 
+       <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ 	</select>
+  
+    <select id="readFromMemberBank"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+      	SELECT
+			tcb.memberId,
+			tcb.realName bankAccountName,
+			tcm.realName authName,
+			tcb.platformUserNo,
+			IFNULL(
+				tcm.idCardNo,
+				tei.legalIdCardNo
+			) idCardNo,
+			tcb.bankCardNo,
+			tbi.bankName,
+			IFNULL(tcm.userRole, tei.userRole) userRole,
+			tcb.bindCardFlag,
+			IFNULL(
+				tcm.isImportUserActivate,
+				tei.isImportUserActivate
+			) isActive,
+			tcb.CREAT_TIME
+		FROM
+			custody_shbk.tr_custody_bankinfo tcb
+		LEFT JOIN (
+			SELECT
+				*
+			FROM
+				custody_shbk.t_bank_info
+			GROUP BY
+				bankCode
+		) tbi ON tcb.bankCode = tbi.bankCode
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON tcm.platformUserNo = tcb.platformUserNo
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON tcb.platformUserNo = tei.platformUserNo
+		WHERE
+			tcb.bindCardFlag = '2'
+		AND tcb.UPDATE_TIME >= #{beginTime} 
+		AND tcb.UPDATE_TIME < #{endTime}
+		AND (
+			tcm.isImportUserActivate = 'true'
+			OR tei.isImportUserActivate = 'true'
+		)
+      ]]>
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  
+    <select id="readFromInvestBid"  resultType="Map">
+       <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+       <![CDATA[ 
+     		SELECT
+				s.MEMBER_ID,
+				s.AMOUNT,
+				s.MODIFIED_TIME
+			FROM
+				invest.t_bid_order s
+			WHERE
+				s.BID_ORDER_NO in (
+					SELECT
+						BID_ORDER_NO
+					FROM
+						(
+							SELECT
+								MIN(a.BID_ORDER_NO) BID_ORDER_NO
+							FROM
+								invest.t_bid_order a
+							WHERE
+								a.STATUS IN (									
+									'BID_SUCCESS','PAY_SUCCESS','BID_FAIL'
+								)
+								AND a.SUBJECT_TYPE = 'SUBJECT'
+							GROUP BY
+								member_id
+						) t
+					WHERE	t.BID_ORDER_NO = s.BID_ORDER_NO) 
+     	    AND s.CREATE_TIME>=#{beginTime} and  s.CREATE_TIME<#{endTime}
+       ]]> 
+       <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ 	</select>
+ 	
+ 	
+ 	<select id="syncPlatformUserNo" resultType="Map">
+ 		<!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+ 			<![CDATA[ 
+ 			SELECT
+				memberId,
+				platformUserNo,
+				userRole,
+				isImportUserActivate
+			FROM
+				custody_shbk.tr_custody_memberinfo
+			WHERE `status` = '1'
+			]]>
+ 		<!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ 	</select>
+</mapper>

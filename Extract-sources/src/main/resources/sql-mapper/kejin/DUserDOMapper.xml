@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DUserDao">
+
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DUserModel">
+    <id column="memberId" property="memberId" jdbcType="VARCHAR"/>
+    <result column="memberType" property="memberType" jdbcType="VARCHAR"/>
+    <result column="registerDatetime" property="registerDatetime" jdbcType="DATE"/>
+    <result column="tieCarDatetime" property="tieCarDatetime"  jdbcType="DATE"/>
+    <result column="firstInvestDatetime" property="firstInvestDatetime" jdbcType="DATE" />
+    <result column="firstInvestAmount" property="firstInvestAmount" jdbcType="DECIMAL" />
+    <result column="financialManager" property="financialManager" jdbcType="VARCHAR" />
+    <result column="friendCode" property="friendCode" jdbcType="VARCHAR" />
+    <result column="recommander" property="recommander" jdbcType="VARCHAR" />
+    <result column="recommandFriendCode" property="recommandFriendCode" jdbcType="VARCHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="certNum" property="certNum" jdbcType="VARCHAR" />
+    <result column="nativeProvince" property="nativeProvince" jdbcType="VARCHAR" />
+    <result column="nativeCity" property="nativeCity" jdbcType="VARCHAR" />
+    <result column="nativeArea" property="nativeArea" jdbcType="VARCHAR" />
+    <result column="age" property="age" jdbcType="DATE" />
+    <result column="gender" property="gender" jdbcType="INTEGER" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="phoneProvince" property="phoneProvince" jdbcType="VARCHAR" />
+    <result column="phoneCity" property="phoneCity" jdbcType="VARCHAR" />
+    <result column="bankCardNum" property="bankCardNum" jdbcType="VARCHAR" />
+    <result column="bankCardAcountName" property="bankCardAcountName" jdbcType="VARCHAR" />
+    <result column="bankCardHeadOffice" property="bankCardHeadOffice" jdbcType="VARCHAR" />
+    <result column="GMT_CREATE" property="GMT_CREATE" jdbcType="DATE" />
+    <result column="GMT_MODIFIED" property="GMT_MODIFIED" jdbcType="DATE" />
+    <result column="platform_user_no" property="platformUserNo" jdbcType="VARCHAR" />
+    <result column="user_role" property="userRole" jdbcType="VARCHAR" />
+    <result column="is_activate" property="isActivate" jdbcType="VARCHAR" />
+  </resultMap>
+    
+  <sql id="Base_Column_List" >
+    memberId,
+	memberType,
+	registerDatetime,
+	tieCarDatetime,
+	firstInvestDatetime,
+	firstInvestAmount,
+	financialManager,
+	friendCode,
+	recommander,
+	recommandFriendCode,
+	`name`,
+	certNum,
+	nativeProvince,
+	nativeCity,
+	nativeArea,
+	age,
+	gender,
+	phone,
+	phoneProvince,
+	phoneCity,
+	bankCardNum,
+	bankCardAcountName,
+	bankCardHeadOffice,
+	GMT_CREATE,
+	GMT_MODIFIED,
+	platform_user_no,
+	user_role,
+	is_activate
+  </sql>
+  
+  <select id="selectByMemberId" parameterType="Map" resultMap="BaseResultMap">
+	  SELECT 
+	  	<include refid="Base_Column_List" />
+	  FROM
+	  	d_user
+	  WHERE memberId = #{id};
+  </select>
+  
+  <select id="selectByPlatUserNo" parameterType="java.util.List" resultType="java.util.Map">
+  	select 
+  		memberId,
+  		platform_user_no platformUserNo,
+  		financialManager 
+  	from 
+  		d_user 
+  	where 1=1
+		AND platform_user_no in 
+		<foreach collection="list" item="model" open="(" separator="," close=")">
+   			#{model.platformUserNo}
+      	</foreach> 
+  </select>
+  
+  <select id="selectByPhone"  parameterType="java.util.List" resultMap="BaseResultMap">
+  	select 
+  		memberId,
+		name,
+		phone,
+		friendCode 
+  	from 
+  		d_user 
+  	where 1=1
+		AND phone in 
+		<foreach collection="list" item="model" open="(" separator="," close=")">
+   			#{model.mobile}
+      	</foreach> 
+  </select>
+  
+  <select id="select" parameterType="Map" resultMap="BaseResultMap">
+       select 
+           <include refid="Base_Column_List" />
+       from d_user
+       where 1=1 
+      <if test="memberIds != null and memberIds.size() > 0" >
+          AND memberId in 
+            <foreach collection="memberIds" item="id" open="(" separator="," close=")">
+			   #{id}
+            </foreach> 
+      </if>  
+  </select>
+  
+  <select id="selectRegisterNoInvestUsers" resultType="java.util.Map">
+  	SELECT
+  		a.memberId,
+  		a.phone,
+  		a.`name`,
+  		a.gender,
+  		a.age,
+  		a.registerDatetime,
+  		b.`name` referee,
+  		c.channel_name channelName
+	FROM
+		(
+			SELECT
+				`name`,
+				phone,
+				memberId,
+				gender,
+				age,
+				registerDatetime,
+				recommandFriendCode,
+				IFNULL(firstInvestAmount, 0) firstInvestAmount
+			FROM
+				d_user
+			WHERE 1=1 
+				<if test="startDate!=null">
+					<![CDATA[ AND registerDatetime >= #{startDate} ]]>
+				</if>
+				<if test="endDate!=null">
+					<![CDATA[ AND registerDatetime < #{endDate} ]]>
+				</if>
+			AND firstInvestAmount IS NULL
+		) a
+	LEFT JOIN d_user b ON a.recommandFriendCode = b.friendCode
+	LEFT JOIN d_channel c ON a.recommandFriendCode = c.f_code
+  </select>
+  
+  <select id="selectRegisterAndInvestUsers" resultType="java.util.Map">
+  	SELECT
+		a.memberId,
+		a.subjectLife,
+		a.amount,
+		a.operationDate,
+		b.phone,
+		b.`name`,
+		b.gender,
+		b.age,
+		b.registerDatetime,
+		b.recommandFriendCode,
+		c.channel_name channelName,
+		d.`name` referee
+	FROM
+		(
+			SELECT
+				orderNo,
+				memberId,
+				subjectLife,
+				amount,
+				operationDate
+			FROM
+				d_reinvest_and_new
+			WHERE 1=1
+				<if test="startDate!=null">
+					<![CDATA[ AND operationDate >= #{startDate} ]]>
+				</if>
+			AND transactionType IN ('1', '2', '3')
+		) a
+	LEFT JOIN (
+		SELECT
+			`name`,
+			phone,
+			memberId,
+			gender,
+			age,
+			registerDatetime,
+			recommandFriendCode
+		FROM
+			d_user
+		WHERE 1=1
+			<if test="startDate!=null">
+				<![CDATA[ AND registerDatetime >= #{startDate} ]]>
+			</if>
+			<if test="endDate!=null">
+				<![CDATA[ AND registerDatetime < #{endDate} ]]>
+			</if>
+	) b ON a.memberId = b.memberId
+	LEFT JOIN d_channel c ON b.recommandFriendCode = c.f_code
+	LEFT JOIN d_user d ON b.recommandFriendCode = d.friendCode
+	WHERE
+		b.memberId IS NOT NULL
+	GROUP BY memberId
+  </select>
+  
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DUserModel" >  
+	    INSERT INTO `d_user` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{memberId,jdbcType=VARCHAR},
+		    3,
+		    #{registerDatetime,jdbcType=TIMESTAMP},
+		    #{tieCarDatetime,jdbcType=TIMESTAMP},
+		    #{firstInvestDatetime,jdbcType=TIMESTAMP},
+		    #{firstInvestAmount,jdbcType=DECIMAL},
+		    #{financialManager,jdbcType=VARCHAR},
+		    #{friendCode,jdbcType=VARCHAR},
+		    #{recommander,jdbcType=VARCHAR},
+		    #{recommandFriendCode,jdbcType=VARCHAR},
+		    #{name,jdbcType=VARCHAR},
+		    #{certNum,jdbcType=VARCHAR},
+		    #{nativeProvince,jdbcType=VARCHAR},
+		    #{nativeCity,jdbcType=VARCHAR},
+		    #{nativeArea,jdbcType=VARCHAR},
+		    #{age,jdbcType=TIMESTAMP},
+		    #{gender,jdbcType=INTEGER},
+		    #{phone,jdbcType=VARCHAR},
+		    #{phoneProvince,jdbcType=VARCHAR},
+		    #{phoneCity,jdbcType=VARCHAR},
+		    #{bankCardNum,jdbcType=VARCHAR},
+		    #{bankCardAcountName,jdbcType=VARCHAR},
+		    #{bankCardHeadOffice,jdbcType=VARCHAR},
+		    now(),
+		    now(),
+		    #{platformUserNo,jdbcType=VARCHAR},
+		    #{userRole,jdbcType=VARCHAR},
+		    #{isActivate,jdbcType=VARCHAR}
+		);	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DUserModel" >
+	update `d_user`
+	set
+		<if test="memberType!=null">
+			memberType = #{memberType,jdbcType=INTEGER},
+		</if>
+		<if test="registerDatetime!=null">
+			registerDatetime = #{registerDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="tieCarDatetime!=null">
+			tieCarDatetime = #{tieCarDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="firstInvestDatetime!=null">
+			firstInvestDatetime = #{firstInvestDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="firstInvestAmount!=null">	
+			firstInvestAmount = #{firstInvestAmount,jdbcType=DECIMAL},
+		</if>
+		<if test="financialManager!=null">	
+			financialManager = #{financialManager,jdbcType=VARCHAR},
+		</if>
+		<if test="friendCode!=null">
+			friendCode = #{friendCode,jdbcType=VARCHAR},
+		</if>
+		<if test="recommander!=null">
+			recommander = #{recommander,jdbcType=VARCHAR},
+		</if>
+		<if test="recommandFriendCode!=null">
+			recommandFriendCode = #{recommandFriendCode,jdbcType=VARCHAR},
+		</if>
+		<if test="name!=null">
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="certNum!=null">
+			certNum = #{certNum,jdbcType=VARCHAR},
+		</if>
+		<if test="nativeProvince!=null">
+			nativeProvince = #{nativeProvince,jdbcType=VARCHAR},
+		</if>
+		<if test="nativeCity!=null">
+			nativeCity = #{nativeCity,jdbcType=VARCHAR},
+		</if>
+		<if test="nativeArea!=null">
+			nativeArea = #{nativeArea,jdbcType=VARCHAR},
+		</if>
+		<if test="age!=null">
+			age = #{age,jdbcType=TIMESTAMP},
+		</if>
+		<if test="gender!=null">	
+			gender = #{gender,jdbcType=INTEGER},
+		</if>
+		<if test="phone!=null">	
+			phone = #{phone,jdbcType=VARCHAR},
+		</if>
+		<if test="phoneProvince!=null">
+			phoneProvince = #{phoneProvince,jdbcType=VARCHAR},
+		</if>
+		<if test="phoneCity!=null">
+			phoneCity = #{phoneCity,jdbcType=VARCHAR},
+		</if>
+		<if test="bankCardNum!=null">
+			bankCardNum = #{bankCardNum,jdbcType=VARCHAR},
+		</if>
+		<if test="bankCardAcountName!=null">
+			bankCardAcountName = #{bankCardAcountName,jdbcType=VARCHAR},
+		</if>
+		<if test="bankCardHeadOffice!=null">
+			bankCardHeadOffice = #{bankCardHeadOffice,jdbcType=VARCHAR},
+		</if>
+		<if test="platformUserNo!=null">
+			platform_user_no = #{platformUserNo, jdbcType=VARCHAR},
+		</if>
+		<if test="userRole!=null">
+			user_role = #{userRole, jdbcType=VARCHAR},
+		</if>
+		<if test="isActivate != null">
+			is_activate = #{isActivate, jdbcType=VARCHAR},
+		</if>
+     	GMT_MODIFIED = now()
+	    WHERE memberId = #{memberId, jdbcType=VARCHAR}
+	    AND (user_role is null or user_role = 'INVESTOR')
+	</update> 
+	
+	<update id="updateRecommandFcode" parameterType="com.kejin.extract.entity.kejinTest.DUserModel">
+		update d_user set 
+		<if test="recommandFriendCode!=null">
+			recommandFriendCode = #{recommandFriendCode,jdbcType=VARCHAR},
+		</if>
+		GMT_MODIFIED = now()
+		where memberId = #{memberId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="syncPlatformUserNo" parameterType="java.util.List">
+		<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
+			UPDATE 
+				kejinTest.d_user
+			SET 
+			<if test="model.platformUserNo != null">
+				platform_user_no = #{model.platformUserNo, jdbcType=VARCHAR},
+			</if>
+			<if test="model.isActivate != null">
+				is_activate = #{model.isActivate, jdbcType=VARCHAR},
+			</if>
+			GMT_MODIFIED = now()
+			WHERE
+				memberId = #{model.memberId}
+			AND (user_role = #{model.userRole} or user_role is null)
+		</foreach>
+	</update>	
+	
+</mapper>

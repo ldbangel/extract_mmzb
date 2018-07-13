@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.service.dao.AchievementManagerFromProdDao">
+    
+ <select id="getAccountBalanceInfo" resultType="java.util.Map">
+ 	SELECT
+		t3.memberid memberId,
+		t3.title authName,
+		d.identity phoneNum,
+		sum(t3.amount) balance,
+		mm.AUTH_NAME financialManager
+	FROM
+		(
+			SELECT
+				d.memberId,
+				d.title,
+				sum(d.balance) amount
+			FROM
+				(
+					SELECT
+						IFNULL(b.memberid, c.memberId) memberId,
+						IFNULL(
+							b.realName,
+							c.enterpriseName
+						) title,
+						a.balance balance
+					FROM
+						custody_shbk.t_settle_balance a
+					LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.platformUserNo = b.platformUserNo
+					LEFT JOIN custody_shbk.t_enterprise_info c ON c.platformUserNo = a.platformUserNo
+					WHERE
+						a.settle_date = DATE_ADD(CURDATE(), INTERVAL - 1 DAY)
+					AND a.balance > 0
+				) d
+			GROUP BY
+				d.memberid
+			UNION
+				SELECT
+					t2.member_id memberid,
+					IFNULL(
+						b.realName,
+						c.enterpriseName
+					) title,
+					sum(
+						CASE direction
+						WHEN 1 THEN
+							amount
+						WHEN 2 THEN
+							- amount
+						END
+					) amount
+				FROM
+					invest.t_all_trade_order t2
+				LEFT JOIN (
+					SELECT
+						memberId,
+						max(realName) realName
+					FROM
+						custody_shbk.tr_custody_memberinfo
+					GROUP BY
+						memberId
+				) b ON t2.member_id = b.memberId
+				LEFT JOIN (
+					SELECT
+						memberId,
+						max(enterpriseName) enterpriseName
+					FROM
+						custody_shbk.t_enterprise_info
+					GROUP BY
+						memberId
+				) c ON t2.member_id = c.memberId
+				WHERE
+					t2.`status` = 'SUCCESS'
+				AND t2.gmt_time > DATE_ADD(CURDATE(), INTERVAL 0 DAY)
+				<![CDATA[ AND t2.gmt_time < DATE_ADD(CURDATE(), INTERVAL 1 DAY) ]]>
+				GROUP BY
+					t2.member_id
+				UNION
+					SELECT
+						a.member_id memberid,
+						IFNULL(
+							b.realName,
+							c.enterpriseName
+						) title,
+						sum(- amount) amount
+					FROM
+						invest.t_bid_order a
+					LEFT JOIN (
+						SELECT
+							memberId,
+							max(realName) realName
+						FROM
+							custody_shbk.tr_custody_memberinfo
+						GROUP BY
+							memberId
+					) b ON a.member_id = b.memberId
+					LEFT JOIN (
+						SELECT
+							memberId,
+							max(enterpriseName) enterpriseName
+						FROM
+							custody_shbk.t_enterprise_info
+						GROUP BY
+							memberId
+					) c ON a.member_id = c.memberId
+					WHERE
+						a.`status` = 'PAY_SUCCESS'
+					<![CDATA[ AND a.create_time < DATE_ADD(CURDATE(), INTERVAL 0 DAY) ]]>
+					GROUP BY
+						a.member_id
+					UNION
+						SELECT
+							a.member_id memberid,
+							IFNULL(
+								b.realName,
+								c.enterpriseName
+							) title,
+							sum(- amount) amount
+						FROM
+							invest.t_bid_order a
+						LEFT JOIN (
+							SELECT
+								memberId,
+								max(realName) realName
+							FROM
+								custody_shbk.tr_custody_memberinfo
+							GROUP BY
+								memberId
+						) b ON a.member_id = b.memberId
+						LEFT JOIN (
+							SELECT
+								memberId,
+								max(enterpriseName) enterpriseName
+							FROM
+								custody_shbk.t_enterprise_info
+							GROUP BY
+								memberId
+						) c ON a.member_id = c.memberId
+						WHERE
+							a.`status` = 'BID_SUCCESS'
+						<![CDATA[ AND a.create_time < DATE_ADD(CURDATE(), INTERVAL 0 DAY) ]]>
+						AND a.modified_time > DATE_ADD(CURDATE(), INTERVAL 0 DAY)
+						GROUP BY
+							a.member_id
+		) t3
+	LEFT JOIN member.tm_member_identity d ON t3.MEMBERID = d.MEMBER_ID
+	AND d.PID = 1
+	AND d.IDENTITY_TYPE = 2
+	LEFT JOIN (
+		SELECT
+			a.MEMBER_ID,
+			b.AUTH_NAME
+		FROM
+			(
+				SELECT
+					MEMBER_ID,
+					FINANCIAL_ADVISOR_A
+				FROM
+					member.t_mama_user
+				WHERE
+					FINANCIAL_ADVISOR_A IS NOT NULL
+			) a
+		LEFT JOIN (
+			SELECT
+				AUTH_NAME,
+				MEMBER_ID
+			FROM
+				cert.tt_auth_order
+			WHERE
+				RESULT = 'checkPass'
+			GROUP BY
+				MEMBER_ID
+		) b ON a.FINANCIAL_ADVISOR_A = b.MEMBER_ID
+	) mm ON t3.memberid = mm.MEMBER_ID
+	WHERE
+		t3.memberId NOT IN (
+			'SYS_GENERATE_000',
+			'SYS_GENERATE_002',
+			'SYS_GENERATE_002',
+			'SYS_GENERATE_004'
+		)
+	AND t3.memberId NOT LIKE '2%'
+	GROUP BY
+		t3.memberid
+	HAVING
+		sum(t3.amount) > 1000
+	ORDER BY
+		sum(t3.amount) DESC
+ </select>
+ 
+ <select id="getValidMemberIdFromMemberInfo" resultType="java.util.Map">
+ 	SELECT
+		memberId,
+		userRole
+	FROM
+		custody_shbk.tr_custody_memberinfo
+	WHERE
+		(
+			(
+				(
+					UPDATE_TIME > '2018-05-17 21:00:00'
+					OR isImportUserActivate = 'true'
+				)
+				AND `status` = '1'
+			)
+			OR memberId IN (
+				'100000346910',
+				'100000220047',
+				'100001980929',
+				'100001940577',
+				'100000349957',
+				'100001127761',
+				'100000340189',
+				'100000261176',
+				'100001602013',
+				'100000120026',
+				'100000548493',
+				'100000240138',
+				'100000241917',
+				'100001600084',
+				'100000260293',
+				'100001160156',
+				'100001880250',
+				'100001155958',
+				'100000240165',
+				'100001920769',
+				'100001243686',
+				'100001880621',
+				'100000343822',
+				'100001261617',
+				'100001286386',
+				'100001800750',
+				'100001521910',
+				'100000220113',
+				'100000325847',
+				'100001900557',
+				'100000361211',
+				'100000260788',
+				'100001580681',
+				'100001202478',
+				'100001880168',
+				'100001306122',
+				'100000646913',
+				'100001264786',
+				'100001880111',
+				'100001160188',
+				'100000548092',
+				'100000665973',
+				'100001240845',
+				'100001800011',
+				'100000323034',
+				'100000200030',
+				'100000646196',
+				'100001980122',
+				'100000420401',
+				'100000646161',
+				'100000328271',
+				'100000400228',
+				'100000682436',
+				'100001801164',
+				'100000902134',
+				'100000160589',
+				'100001600093',
+				'100000646110',
+				'100000180368',
+				'100001820013',
+				'100000589940',
+				'100000323206',
+				'100000548174',
+				'100001160102',
+				'100000241509',
+				'100001860398',
+				'100000548193',
+				'100000241112',
+				'100000140037',
+				'100000349478',
+				'100000321131',
+				'100001202364',
+				'100000667786',
+				'100001200824',
+				'100000340310',
+				'100001520173',
+				'100001920407',
+				'100000260294',
+				'100000080034',
+				'100001880275',
+				'100001727557',
+				'100001261200',
+				'100000349582',
+				'100000241228',
+				'100001920881',
+				'100000261048',
+				'100001920611',
+				'100000324183',
+				'100000261274',
+				'100001241895',
+				'100000674475',
+				'100001152286',
+				'100000327875',
+				'100000640235',
+				'100000327652',
+				'100001083587',
+				'100000260444',
+				'100001264451',
+				'100000180551',
+				'100000260885',
+				'100001242641',
+				'100000260300',
+				'100000665957',
+				'100000260406',
+				'100000040028',
+				'100001040130',
+				'100000348061',
+				'100001305612',
+				'100001280228',
+				'100001940571',
+				'100000261268',
+				'100001940381',
+				'100001460447',
+				'100001920462',
+				'100000665717',
+				'100001822641',
+				'100000801137',
+				'100001262028',
+				'100001580703',
+				'100001740044',
+				'100001800817',
+				'100001300169',
+				'100000240486',
+				'100001046366',
+				'100001821718',
+				'100001302450',
+				'100001800823',
+				'100001802623',
+				'100001820999',
+				'100001940279',
+				'100001920254',
+				'100001920250',
+				'100001940280',
+				'100001920257',
+				'100001940277',
+				'100001920251',
+				'100001940281',
+				'100001920258',
+				'100001940278',
+				'100001920253',
+				'100001940288',
+				'100001920259',
+				'100001720973',
+				'100001244684',
+				'100001083285',
+				'100000711526'
+			)
+		)
+	AND userRole IN ('INVESTOR', 'BORROWERS');
+ </select>
+ 
+ <select id="getValidMemberIdFromEnterpriseInfo" resultType="java.util.Map">
+ 	SELECT
+		memberId,
+		userRole
+	FROM
+		custody_shbk.t_enterprise_info
+	WHERE
+		(
+			UPDATE_TIME > '2018-05-17 21:00:00'
+			OR isImportUserActivate = 'true'
+		)
+	AND `status` = '1'
+	AND userRole IN ('INVESTOR', 'BORROWERS');
+ </select>
+ 
+ <select id="getPhoneNumsByMemberID" parameterType="java.util.List" resultType="java.util.Map">
+ 	SELECT
+		IDENTITY phoneNum,
+		MEMBER_ID memberId
+	FROM
+		member.tm_member_identity
+	WHERE
+		IDENTITY_TYPE = '2'
+	AND MEMBER_ID IN 
+	<foreach collection="list" item="model" open="(" separator="," close=")">
+		#{model.memberId}
+   	</foreach> ;
+ </select>
+	
+</mapper>

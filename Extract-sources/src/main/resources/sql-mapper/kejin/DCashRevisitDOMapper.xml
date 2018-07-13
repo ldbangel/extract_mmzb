@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DCashRevisitDao">
+    
+  <sql id="Base_Column_List" >        
+	memberId,
+	name,
+	phone,
+	cashAmount,
+	managerName,
+	feedback,
+	orderTime,
+	GMT_CREATE,
+	GMT_MODIFIED	    
+  </sql>
+  
+  <insert id="insertList" parameterType="java.util.List">
+	INSERT INTO `d_cash_revisit` (
+	<include refid="Base_Column_List" />
+	)
+	VALUES
+	<foreach collection="list" item="model" index="index" separator=",">
+		(#{model.memberId,jdbcType=VARCHAR},
+		#{model.name,jdbcType=VARCHAR},
+		#{model.phone,jdbcType=VARCHAR},
+		#{model.cashAmount,jdbcType=DECIMAL},
+		#{model.managerName,jdbcType=VARCHAR},
+		#{model.feedback,jdbcType=VARCHAR},
+		#{model.orderTime,jdbcType=TIMESTAMP},
+		now(),
+		now()
+	  	)
+	</foreach>
+  </insert>
+  
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DRegularInvestReaderDao">
+    
+    <select id="readCreateFromBidOrder"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+     	SELECT
+     	    a.BID_ORDER_NO,
+			a.MEMBER_ID ,
+			b.SUBJECT_NO ,
+			b.SUBJECT_NAME ,
+			b.LOAN_TERM ,
+		    b.SUBJECT_TYPE,
+			b.REWARD_RATE ,
+		    b.REPAY_TYPE,  
+		    a.AMOUNT,
+		    a.SUBMIT_TYPE,
+		    a.STATUS,
+		    a.CREATE_TIME,
+		    a.EXTENSION
+		FROM
+			invest.t_bid_order a
+		INNER JOIN invest.t_invest_subject b ON a.SUBJECT_NO = b.SUBJECT_NO
+		WHERE 1=1 
+		AND a.`STATUS` in ('PAY_SUCCESS','BID_SUCCESS','BID_FAIL')
+		AND a.SUBJECT_TYPE = 'SUBJECT'
+		AND a.CREATE_TIME >= #{beginTime}
+		AND a.CREATE_TIME < #{endTime}     
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+
+  	<select id="readModifiedFromBidOrder"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+     	SELECT
+     	    a.BID_ORDER_NO,
+			a.MEMBER_ID ,
+			b.SUBJECT_NO ,
+			b.SUBJECT_NAME ,
+			b.LOAN_TERM ,
+		    b.SUBJECT_TYPE,
+			b.REWARD_RATE ,
+		    b.REPAY_TYPE,  
+		    a.AMOUNT,
+		    a.SUBMIT_TYPE,
+		    a.STATUS,
+		    a.CREATE_TIME,
+		    a.EXTENSION
+		FROM
+			invest.t_bid_order a
+		INNER JOIN invest.t_invest_subject b ON a.SUBJECT_NO = b.SUBJECT_NO
+		WHERE 1=1 
+		AND a.`STATUS` in ('BID_SUCCESS', 'BID_FAIL')
+		AND a.SUBJECT_TYPE = 'SUBJECT'
+		AND a.MODIFIED_TIME >= #{beginTime}
+		AND a.MODIFIED_TIME < #{endTime}   
+		AND a.CREATE_TIME < #{beginTime}
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	<select id="getBaseInvestInfo" resultType="com.kejin.extract.entity.service.BaseInvestInfoModel">
+  		SELECT
+			IFNULL(count(1),0) AS investNum,
+			IFNULL(sum(i.AMOUNT),0) AS investAmount,
+			HOUR (i.CREATE_TIME) AS investHour
+		FROM
+			invest.t_bid_order i
+		WHERE 1=1 AND i.SUBJECT_TYPE = 'SUBJECT'
+		<if test="beginTime!=null">
+			<![CDATA[ AND i.CREATE_TIME >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND i.CREATE_TIME < #{endTime} ]]>
+		</if>
+		GROUP BY
+			investHour
+		ORDER BY
+            investHour;
+  	</select>
+  	
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DAMobileDao">
+
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DAMobileModel" >   
+	<result column="NUM" property="num" jdbcType="VARCHAR" />
+	<result column="PROVINCE" property="province" jdbcType="VARCHAR" />
+	<result column="CITY" property="city" jdbcType="VARCHAR" />
+	<result column="RUNCOMP" property="runComp" jdbcType="VARCHAR" />
+	<result column="AREACODE" property="areaCode" jdbcType="VARCHAR" />
+	<result column="POSTCODE" property="postCode" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    NUM,PROVINCE,CITY,RUNCOMP,AREACODE,POSTCODE
+  </sql>
+  
+   <select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DAMobileModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_a_mobile
+       where 1=1 
+       <if test="num!=null">
+			AND NUM = #{num,jdbcType=VARCHAR} 
+		</if>
+   
+  </select>
+  
+  
+	
+</mapper>

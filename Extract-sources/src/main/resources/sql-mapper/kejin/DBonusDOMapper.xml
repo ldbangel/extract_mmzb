@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DBonusDao">
+    
+  <sql id="Base_Column_List" >        
+    memberId,
+	amount,
+	recordDate,
+	GMT_CREATE,
+	GMT_MODIFIED,
+	request_no,
+	bonus_type,
+	platform_user_no    	
+  </sql>
+  
+  <!-- <select id="select" parameterType="Map" 
+                        resultType="com.kejin.extract.processed.model.DBonusModel">
+       select 
+           <include refid="Base_Column_List" />
+       from `d_bonus`
+       where 1=1 
+       <if test="voucherNos != null and voucherNos.size() > 0" >
+          AND voucherNo in 
+            <foreach collection="voucherNos" item="voucherNo" open="(" separator="," close=")">
+			   #{voucherNo}
+            </foreach> 
+       </if>  
+  
+  </select> -->
+  
+  
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DBonusModel" >  
+	    INSERT INTO `d_bonus` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{memberId,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{recordDate,jdbcType=TIMESTAMP},
+		    now(),
+		    now(),
+		    #{requestNo,jdbcType=VARCHAR},
+		    #{bonusType,jdbcType=VARCHAR},
+		    #{platformUserNo,jdbcType=VARCHAR}
+		) ;	  
+  </insert> 
+
+  <!-- <update id="update" parameterType="com.kejin.extract.processed.model.DBonusModel" >
+  	update `d_bonus`
+	set
+	     <if test="memberId!=null">
+	      	 memberId = #{memberId,jdbcType=VARCHAR},
+	     </if>
+	     <if test="direction!=null">
+	       	 direction = #{direction,jdbcType=VARCHAR},
+	     </if>
+	     <if test="amount!=null">
+	       	 amount = #{amount,jdbcType=DECIMAL},
+	     </if>
+	     <if test="recordDate!=null">
+	         recordDate = #{recordDate,jdbcType=TIMESTAMP},
+	     </if>
+	     <if test="memo!=null">
+	         memo = #{memo,jdbcType=VARCHAR},
+	     </if>
+	  
+     	GMT_MODIFIED = now()
+	    WHERE voucherNo = #{voucherNo,jdbcType=VARCHAR}
+	
+  </update> --> 	
+	
+</mapper>

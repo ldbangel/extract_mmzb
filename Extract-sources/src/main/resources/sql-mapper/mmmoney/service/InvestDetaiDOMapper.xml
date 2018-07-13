@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.service.dao.InvestDetailDao">
+    
+ <select id="querySubjectBid"  resultType="com.kejin.extract.entity.service.dynamic.InvestBidDetailModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" />   -->   
+			SELECT
+				o.AMOUNT as amount,
+				o.CREATE_TIME as operationTime,
+				o.STATUS as status,
+				CASE
+			WHEN o.SUBJECT_TYPE = 'SUBJECT' THEN
+				s.LOAN_TERM
+			WHEN o.SUBJECT_TYPE = 'CREDIT' THEN
+				r.LOAN_TERM
+			WHEN o.SUBJECT_TYPE = 'CURRENT_I' THEN
+			  s.LOAN_TERM
+			END AS term,
+				CASE
+			WHEN o.SUBJECT_TYPE = 'SUBJECT' THEN
+				s.SUBJECT_NO
+			WHEN o.SUBJECT_TYPE = 'CREDIT' THEN
+				r.SUBJECT_NO
+			WHEN o.SUBJECT_TYPE = 'CURRENT_I' THEN
+			  s.SUBJECT_NO
+			END AS subjectNo,
+			  CASE
+			WHEN o.SUBJECT_TYPE = 'SUBJECT' THEN
+				s.SUBJECT_NAME
+			WHEN o.SUBJECT_TYPE = 'CREDIT' THEN
+				r.SUBJECT_NAME
+			WHEN o.SUBJECT_TYPE = 'CURRENT_I' THEN
+			  s.SUBJECT_NAME
+			END AS subjectName		
+			 
+			FROM
+				invest.t_bid_order o
+			LEFT JOIN invest.t_invest_subject s ON s.SUBJECT_NO = o.SUBJECT_NO
+			LEFT JOIN invest.t_credit_assignment a ON a.CREDIT_ASSIGNMENT_ID = o.SUBJECT_NO
+			LEFT JOIN invest.t_invest_subject r ON r.SUBJECT_NO = a.SUBJECT_NO
+			WHERE
+				1 = 1
+			AND o.SUBJECT_TYPE IN (
+				'SUBJECT',
+				'CREDIT',
+				'CURRENT_I'
+			)
+			AND o.MEMBER_ID = #{memberId}
+			<if test="beginTime!=null">
+				<![CDATA[ AND o.CREATE_TIME >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND o.CREATE_TIME < #{endTime} ]]>
+			</if>
+			ORDER BY
+				o.CREATE_TIME DESC
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+ 
+ 
+  <select id="queryRecoveryDetail"  resultType="com.kejin.extract.entity.service.dynamic.RecoveryDetailModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->     
+      <![CDATA[ 			
+			SELECT
+				s.SUBJECT_NO AS subjectNo,
+				s.SUBJECT_NAME AS subjectName,
+				d.MODIFIED_TIME AS recoveryTime,
+				d.PRINCIPAL AS principal,
+				d.INTEREST AS interest,
+				d.STATUS AS status,
+				CASE
+				WHEN s.SUBJECT_NO = '20160120211743S10001' THEN
+					'current'
+				ELSE
+					'subject'
+				END as type
+			FROM
+				invest.t_recovery_order_detail d
+			LEFT JOIN invest.t_recovery_order o ON d.RECOVERY_ORDER_NO = o.RECOVERY_ORDER_NO
+			LEFT JOIN invest.t_invest_subject s ON s.SUBJECT_NO = o.SUBJECT_NO
+			WHERE
+				d.MEMBER_ID = #{memberId} 
+			AND d.MODIFIED_TIME >= #{beginTime}
+			AND d.MODIFIED_TIME < #{endTime}
+			ORDER BY
+				d.MODIFIED_TIME desc
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+ 
+   <select id="queryUnRecoveryDetail"  resultType="com.kejin.extract.entity.service.dynamic.RecoveryDetailModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" />   -->   
+      <![CDATA[ 			
+		SELECT
+			  c.SUBJECT_NO as subjectNo,
+			  t.SUBJECT_NAME as subjectName,
+			  t.PLANNING_REPAY_DATE as recoveryTime,
+			  c.NUMBERS / t.NUMBERS * t.UNPAID_PRINCIPAL as principal,
+			  c.NUMBERS / t.NUMBERS * t.UNPAID_INTEREST as interest,
+			  'INIT',
+			  'subject'
+			FROM
+				invest.t_credit c
+			CROSS JOIN (
+				SELECT
+					i.UNPAID_INTEREST,
+					i.UNPAID_PRINCIPAL,
+					i.PLANNING_REPAY_DATE,
+					i.REPAY_SCHED_ID,
+					su.SUBJECT_NAME,
+					su.SUBJECT_NO,
+					c.NUMBERS
+				FROM
+					loan.t_rs_installment i
+				LEFT JOIN loan.t_rs_repayment_sched s ON s.ID = i.REPAY_SCHED_ID
+				LEFT JOIN loan.t_ls_project p ON s.LOAN_PROJ_NO = p.ID
+				LEFT JOIN invest.t_invest_subject su ON su.APPLY_NO = s.LOAN_PROJ_NO
+				LEFT JOIN invest.t_credit c ON c.SUBJECT_NO = su.SUBJECT_NO
+				AND c.SUBJECT_NO = c.MEMBER_ID
+				WHERE
+					i.`STATUS` in ('INIT','USING')
+			) t ON c.SUBJECT_NO = t.SUBJECT_NO
+			AND c.MEMBER_ID = #{memberId}
+			ORDER BY recoveryTime
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+  
+ <select id="queryAllCredit"  resultType="com.kejin.extract.entity.service.dynamic.CreditInfoModel">
+  	 <![CDATA[ 	
+	  	SELECT
+			c.SUBJECT_NO AS subjectNo,
+			c.CREDIT_ID AS creditId,
+			s.SUBJECT_NAME AS subjectName,
+			s.STATUS AS STATUS,
+			s.LOAN_TERM AS term,
+			c.NUMBERS AS amount,
+			d.INTEREST AS interest,
+			c.BID_ORDER_NO AS bidOrderNo
+		FROM
+			invest.t_credit c
+		LEFT JOIN invest.t_invest_subject s ON s.SUBJECT_NO = c.SUBJECT_NO
+		LEFT JOIN invest.t_recovery_order_detail d ON d.CREDIT_ID = c.CREDIT_ID
+		AND d.MEMBER_ID = c.MEMBER_ID
+		WHERE
+			1 = 1
+		#AND c.NUMBERS > 0
+		AND s.`STATUS` = 15
+		AND c.SUBJECT_NO <> '20160120211743S10001'
+		AND c.MEMBER_ID = #{memberId}  
+		ORDER BY
+			c.CREDIT_ID DESC   	 
+      ]]> 
+ </select>
+ 
+ <select id="queryRelationBid"  resultType="com.kejin.extract.entity.service.dynamic.RelationBidModel">
+	  	SELECT
+	  	  o.BID_ORDER_NO as bidNo,
+		  o.SUBJECT_NO as subjectNo,
+		  o.AMOUNT as amount,
+		  o.SUBJECT_TYPE as subjectType,
+		  o.CREATE_TIME as createTime
+		FROM
+			invest.t_bid_order o
+		WHERE
+			1 = 1
+		AND o.STATUS in ('BID_SUCCESS')
+		AND o.MEMBER_ID = #{memberId}
+		AND  (
+		<if test="subjectSet != null and subjectSet.size() > 0" >
+			o.SUBJECT_NO in
+			<foreach collection="subjectSet" item="subject" open="(" separator="," close=")">
+				#{subject}
+		    </foreach> 		
+		</if>
+		<if test="bidSet != null and bidSet.size() > 0 and subjectSet != null and subjectSet.size() > 0" >
+		 or
+		</if>
+		<if test="bidSet != null and bidSet.size() > 0" >
+			 o.BID_ORDER_NO in
+			<foreach collection="bidSet" item="bidNo" open="(" separator="," close=")">
+				#{bidNo}
+		    </foreach> 		
+		</if>
+		)
+		ORDER BY o.CREATE_TIME
+ </select>
+ 
+ 
+  <select id="queryRelationCreditAssignment"  resultType="com.kejin.extract.entity.service.dynamic.RelationCreditAssignmentModel">
+	  	SELECT
+			a.CREDIT_ASSIGNMENT_ID as id,
+			a.SUBJECT_NO as subjectNo,
+		    a.ORIGINAL_NUMBERS - a.SURPLUS_NUMBER as assignmentCreditAmount
+		FROM
+			invest.t_credit_assignment a
+		WHERE 1=1
+		AND a.ASSIGNMENT_MEMBER_ID = #{memberId}
+		<if test="subjectSet != null and subjectSet.size() > 0" >
+			AND a.SUBJECT_NO in
+			<foreach collection="subjectSet" item="subjectNo" open="(" separator="," close=")">
+				#{subjectNo}
+		    </foreach> 		
+		</if>
+ </select>
+ 
+ <select id="queryRelationUnpaiInterest"  resultType="com.kejin.extract.entity.service.dynamic.RelationUnpaiInterest">
+  	 <![CDATA[ 	
+			SELECT
+				c.SUBJECT_NO as subjectNo,
+				c.NUMBERS as Amount,
+				t.SUBJECT_NAME as subjectName,
+				c.NUMBERS / t.NUMBERS * t.UNPAID_INTEREST as unpaiInterest
+			FROM
+				invest.t_credit c
+			CROSS JOIN (
+				SELECT
+					sum(i.UNPAID_INTEREST) as UNPAID_INTEREST,
+					sum(i.UNPAID_PRINCIPAL) as UNPAID_PRINCIPAL,
+					i.PLANNING_REPAY_DATE,
+					i.REPAY_SCHED_ID,
+					su.SUBJECT_NAME,
+					su.SUBJECT_NO,
+					c.NUMBERS
+				FROM
+					loan.t_rs_installment i
+				LEFT JOIN loan.t_rs_repayment_sched s ON s.ID = i.REPAY_SCHED_ID
+				LEFT JOIN loan.t_ls_project p ON s.LOAN_PROJ_NO = p.ID
+				LEFT JOIN invest.t_invest_subject su ON su.APPLY_NO = s.LOAN_PROJ_NO
+				LEFT JOIN invest.t_credit c ON c.SUBJECT_NO = su.SUBJECT_NO
+				AND c.SUBJECT_NO = c.MEMBER_ID
+				WHERE
+					i.`STATUS` = 'INIT'
+				GROUP BY
+					i.REPAY_SCHED_ID
+			) t ON c.SUBJECT_NO = t.SUBJECT_NO
+			AND c.MEMBER_ID = #{memberId}
+			AND c.NUMBERS > 0
+			AND t.NUMBERS > 0
+      ]]> 
+ </select>
+ 
+	
+	
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DBonusReaderDao">
+
+    <select id="readFromBusinessDetail"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+	      	SELECT
+				a.request_no,
+				IFNULL(b.memberId, tei.memberId) memberId,
+			IF (
+				a.biz_type = 'INTEREST',
+				a.biz_type,
+				a.extended_field5
+			) bonus_type,
+			 a.target_platform_user_no platformUserNo,
+			 a.amount,
+			 a.create_time createTime
+			FROM
+				custody_shbk.t_business_details a
+			LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.target_platform_user_no = b.platformUserNo
+			LEFT JOIN custody_shbk.t_enterprise_info tei ON a.target_platform_user_no = tei.platformUserNo
+			WHERE
+				(
+					biz_type = 'INTEREST'
+					OR (
+						biz_type = 'MARKETING'
+						AND extended_field5 IN ('REWARD', 'MANUAL', 'COUPON')
+					)
+				)
+			AND request_no IN (
+				SELECT
+					request_no
+				FROM
+					custody_shbk.t_transaction_details
+				WHERE
+					`status` = 'PAY_SUCCESS'
+				AND trade_type = 'MARKETING'
+				<if test="beginTime!=null">
+					<![CDATA[ AND modified_time >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND modified_time < #{endTime} ]]>
+				</if>
+			)
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://cxf.apache.org/jaxws
+            http://cxf.apache.org/schemas/jaxws.xsd
+            http://www.springframework.org/schema/aop
+            http://cxf.apache.org/transports/http/configuration
+            http://cxf.apache.org/schemas/configuration/http-conf.xsd
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util.xsd"
+    default-autowire="byName">
+    
+    <context:component-scan base-package="com.kejin.extract.integration.custody.impl"/>
+    
+    <jaxws:client id="registerFacade"
+		serviceClass="com.mmzb.custody.shbk.service.facade.RegisterFacade"
+		address="http://custody-web.88mmmoney.com/custody-web/ws/registerFacade"/>
+		<!-- address="http://192.168.10.42:8260/custody-web/ws/registerFacade" /> -->
+		
+	<!-- http://custody-web.88mmmoney.com/custody-web/ws -->
+</beans>

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.kejin.Extract</groupId>
+    <artifactId>Extract</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>Extract-integration</artifactId>
+  <name>Extract-integration</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+	</dependency>
+	
+	<!-- CXF -->
+	<dependency>
+		<groupId>org.apache.cxf</groupId>
+		<artifactId>cxf-rt-management</artifactId>
+		<version>2.4.3</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.cxf</groupId>
+		<artifactId>cxf-rt-frontend-jaxws</artifactId>
+		<version>2.4.3</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>asm</artifactId>
+				<groupId>asm</groupId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+    
+    <!-- custody -->
+    <dependency>
+        <groupId>com.mmzb.custody</groupId>
+        <artifactId>custody-service-facade</artifactId>
+    </dependency>
+  </dependencies>
+</project>

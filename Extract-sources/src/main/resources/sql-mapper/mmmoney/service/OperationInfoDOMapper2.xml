@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.service.dao.OperationInfoDao2">
+    
+ <select id="getSimpleReportInfoFromProd" resultType="java.util.Map">
+ 	SELECT
+		*
+	FROM
+		(
+			SELECT
+				COUNT(DISTINCT t.MEMBER_ID) tradeNum
+			FROM
+				invest.t_bid_order t
+			WHERE 1=1
+				<if test="beginTime!=null">
+					<![CDATA[ AND t.CREATE_TIME >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND t.CREATE_TIME < #{endTime} ]]>
+				</if>
+		) t1
+	JOIN (
+		SELECT
+			sum(
+				i.UNPAID_PRINCIPAL + i.UNPAID_INTEREST
+			) monthWaitRecoveryAmount
+		FROM
+			loan.t_rs_installment i
+		WHERE 1=1
+			<if test="endTime != null">
+				<![CDATA[ AND i.PLANNING_REPAY_DATE >= #{endTime} ]]>
+			</if>
+			<if test="thisMonthEndTime != null">
+				<![CDATA[ AND i.PLANNING_REPAY_DATE < #{thisMonthEndTime} ]]>
+			</if>
+	) t2
+	JOIN (
+		SELECT
+			sum(
+				i.UNPAID_PRINCIPAL + i.PAID_PRINCIPAL
+			) regularAssetsAllAmount
+		FROM
+			loan.t_rs_installment i
+		LEFT JOIN loan.t_rs_repayment_sched b ON b.id = i.repay_sched_id
+		LEFT JOIN loan.t_ls_project a ON b.loan_proj_no = a.id
+		LEFT JOIN invest.t_invest_subject c ON a.ID = c.APPLY_NO
+		WHERE
+			c.APPLY_NO != 'L20160120577003'
+		AND c.`STATUS` IN ('05', '10', '15', '08')
+		<if test="endTime != null">
+			<![CDATA[ AND i.GMT_CREATED < #{endTime} AND i.PLANNING_REPAY_DATE >= #{endTime}]]>
+		</if>
+	) t3
+	JOIN (
+		SELECT
+			(
+				(
+					SELECT
+						sum(
+							i.UNPAID_PRINCIPAL + i.UNPAID_INTEREST + i.PAID_INTEREST + i.PAID_PRINCIPAL
+						)
+					FROM
+						loan.t_rs_installment i
+					WHERE 1=1
+						<if test="endTime != null">
+							<![CDATA[ AND i.GMT_CREATED < #{endTime} AND i.PLANNING_REPAY_DATE >= #{endTime} ]]>
+						</if>
+				) / (
+					SELECT
+						sum(
+							i.UNPAID_PRINCIPAL + i.UNPAID_INTEREST + i.PAID_INTEREST + i.PAID_PRINCIPAL
+						)
+					FROM
+						loan.t_rs_installment i
+					WHERE 1=1
+						<if test="beginTime != null">
+							<![CDATA[ AND i.GMT_CREATED < #{beginTime} AND i.PLANNING_REPAY_DATE >= #{beginTime} ]]>
+						</if>
+				) - 1
+			) regularAssetsChg
+	) t4
+	JOIN (
+		SELECT
+			sum(t3.AMOUNT) monthRegularRecoveryAmount,
+			sum(
+				least(
+					ifnull(t3.AMOUNT, 0),
+					ifnull(t17.AMOUNT, 0)
+				)
+			) AS monthRegularReinvestAmount
+		FROM
+			(
+				SELECT DISTINCT
+					t1.MEMBER_ID,
+					SUM(t1.AMOUNT) AMOUNT
+				FROM
+					invest.t_recovery_order_detail t1
+				LEFT JOIN invest.t_credit t2 ON t1.CREDIT_ID = t2.CREDIT_ID
+				WHERE
+					t2.SUBJECT_NO != '20160120211743S10001'
+					<if test="thisMonthBeginTime != null">
+						<![CDATA[ AND t1.CREATE_TIME >= #{thisMonthBeginTime} ]]>
+					</if>
+					<if test="endTime != null">
+						<![CDATA[ AND t1.CREATE_TIME < #{endTime} ]]>
+					</if>
+				GROUP BY
+					t1.MEMBER_ID
+			) t3
+		LEFT JOIN (
+			SELECT
+				a.MEMBER_ID AS MEMBER_ID,
+				SUM(a.AMOUNT) AS AMOUNT
+			FROM
+				invest.t_bid_order a
+			WHERE
+				a. STATUS IN (
+					'PAY_SUCCESS',
+					'BID_SUCCESS'
+				)
+				<if test="thisMonthBeginTime != null">
+					<![CDATA[ AND a.CREATE_TIME >= #{thisMonthBeginTime} ]]>
+				</if>
+				<if test="endTime != null">
+					<![CDATA[ AND a.CREATE_TIME < #{endTime} ]]>
+				</if>
+			GROUP BY
+				a.MEMBER_ID
+		) t17 ON t3.MEMBER_ID = t17.MEMBER_ID
+	) t5
+	JOIN (
+		SELECT
+			count(*) AS newInvestNum2
+		FROM
+			invest.t_bid_order s
+		WHERE
+			EXISTS (
+				SELECT
+					BID_ORDER_NO
+				FROM
+					(
+						SELECT
+							MIN(a.BID_ORDER_NO) BID_ORDER_NO
+						FROM
+							invest.t_bid_order a
+						WHERE
+							a. STATUS IN (
+								'PAY_SUCCESS',
+								'BID_SUCCESS'
+							)
+						GROUP BY
+							member_id
+					) t
+				WHERE
+					t.BID_ORDER_NO = s.BID_ORDER_NO
+			)
+		<if test="beginTime != null">
+			<![CDATA[ AND s.CREATE_TIME >= #{beginTime} ]]>
+		</if>
+		<if test="endTime != null">
+			<![CDATA[ AND s.CREATE_TIME < #{endTime} ]]>
+		</if>
+	) t6
+	JOIN (
+		SELECT
+			count(DISTINCT t.MEMBER_ID) convertOfInvestNum
+		FROM
+			invest.t_bid_order t
+		LEFT JOIN member.tm_member t1 ON t.MEMBER_ID = t1.MEMBER_ID
+		WHERE 1=1
+			<if test="beginTime != null">
+				<![CDATA[ AND t.CREATE_TIME >= #{beginTime} AND t1.CREATE_TIME >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[ AND t.CREATE_TIME < #{endTime} AND t1.CREATE_TIME < #{endTime} ]]>
+			</if>
+		AND t.STATUS IN (
+			'PAY_SUCCESS',
+			'BID_SUCCESS'
+		)
+		AND t.SUBJECT_TYPE = 'SUBJECT'
+	) t7;
+ </select>
+ 
+ <select id="getRegisterPlatformInfo" resultType="java.util.Map">
+ 	SELECT
+		platform,
+		sum(registerNum) registerNum
+	FROM
+		(
+			SELECT
+				CASE
+			WHEN REG_PROD_PLATFORM = '00' THEN
+				'Android'
+			WHEN REG_PROD_PLATFORM = '01' THEN
+				'iOS'
+			WHEN REG_PROD_PLATFORM IN ('02', '03') THEN
+				'H5'
+			ELSE
+				'PC'
+			END platform,
+			count(0) registerNum
+		FROM
+			member.tm_member_detail
+		WHERE 1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND CREATE_TIME >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND CREATE_TIME < #{endTime} ]]>
+			</if>
+		GROUP BY
+			REG_PROD_PLATFORM
+		) a
+	GROUP BY
+		platform;
+ </select>
+ 
+ <select id="getTieCardPlatformInfo" resultType="java.util.Map">
+ 	SELECT
+		count(0) tieNum
+	FROM
+		custody_shbk.tr_custody_bankinfo
+	WHERE 1=1
+	<if test="beginTime!=null">
+		<![CDATA[ AND CREAT_TIME >= #{beginTime} ]]>
+	</if>
+	<if test="endTime!=null">
+		<![CDATA[ AND CREAT_TIME < #{endTime} ]]>
+	</if>
+ </select>
+ 
+ <select id="getRecoveryRateInfo" resultType="java.util.Map">
+ 	SELECT
+		a.monthRegularReinvestAmount / a.monthRegularRecoveryAmount reinvestRate
+	FROM
+		(
+			SELECT
+				sum(t3.AMOUNT) monthRegularRecoveryAmount,
+				sum(least(ifnull(t3.AMOUNT, 0),ifnull(t17.AMOUNT, 0))) AS monthRegularReinvestAmount
+			FROM
+				(
+					SELECT DISTINCT
+						t1.MEMBER_ID,
+						SUM(t1.AMOUNT) AMOUNT
+					FROM
+						invest.t_recovery_order_detail t1
+					LEFT JOIN invest.t_credit t2 ON t1.CREDIT_ID = t2.CREDIT_ID
+					WHERE
+						t2.SUBJECT_NO != '20160120211743S10001'
+					<if test="beginTime!=null">
+						<![CDATA[ AND t1.CREATE_TIME >= #{beginTime} ]]>
+					</if>
+					<if test="endTime!=null">
+						<![CDATA[ AND t1.CREATE_TIME < #{endTime} ]]>
+					</if>
+					GROUP BY
+						t1.MEMBER_ID
+				) t3
+			LEFT JOIN (
+				SELECT
+					a.MEMBER_ID AS MEMBER_ID,
+					SUM(a.AMOUNT) AS AMOUNT
+				FROM
+					invest.t_bid_order a
+				WHERE
+					a. STATUS IN (
+						'PAY_SUCCESS',
+						'BID_SUCCESS',
+						'current_Success'
+					)
+				<if test="beginTime!=null">
+					<![CDATA[ AND a.CREATE_TIME >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND a.CREATE_TIME < #{endTime} ]]>
+				</if>
+				GROUP BY
+					a.MEMBER_ID
+			) t17 ON t3.MEMBER_ID = t17.MEMBER_ID
+		) a;
+ </select>
+	
+</mapper>

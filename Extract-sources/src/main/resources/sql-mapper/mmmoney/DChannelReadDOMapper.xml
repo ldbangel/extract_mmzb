@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DChannelReaderDao">
+    
+    <select id="readChannelFromEmployee" resultType="com.kejin.extract.entity.kejinTest.DChannelModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+		SELECT
+			MEMBER_ID memberId,
+			NAME name,
+			MOBILE phone,
+			F_CODE fCode,
+			ZONE zone,
+			DESCRIPTION description,
+			CREATE_TIME createTime
+		FROM
+			member.t_mama_employee
+		WHERE TYPE = '2'
+		<if test="beginTime != null">
+			<![CDATA[ AND CREATE_TIME >= #{beginTime} ]]>
+		</if>
+		<if test="endTime != null">
+			<![CDATA[ AND CREATE_TIME < #{endTime} ]]>
+		</if>
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+
+</mapper>

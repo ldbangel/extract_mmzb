@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.service.dao.UserBaseInfoDetailDao">
+    
+ <select id="getCreditBalance"  resultType="Map">          
+      <![CDATA[ 			
+			SELECT
+				IFNULL(sum(c.NUMBERS),0) as amount
+			FROM
+				invest.t_credit c
+			WHERE
+				1 = 1
+			AND c.NUMBERS > 0
+			AND c.SUBJECT_NO <> '20160120211743S10001'
+			AND c.MEMBER_ID = #{memberId};
+      ]]>    
+ </select>
+ 
+ <select id="getAccountBalance"  resultType="Map">          
+      <![CDATA[ 			
+			SELECT				
+				a.ACCOUNT_TYPE,
+				IFNULL(d.BALANCE,0) as BALANCE
+			FROM
+				member.tr_member_account a
+			LEFT JOIN dpm.t_dpm_outer_account_subset d ON d.ACCOUNT_NO = a.ACCOUNT_ID
+			AND d.FUND_TYPE = 'DR'
+			WHERE
+				a.MEMBER_ID = #{memberId};
+      ]]>    
+ </select>
+ 
+ <select id="getInterestBalance"  resultType="Map">          
+      <![CDATA[ 			
+			SELECT
+				SUM(
+					sc.snums / it.nums * ri.SURPLUS_INTEREST
+				) amount
+			FROM
+				(
+					SELECT
+						tc.subject_no,
+						SUM(tc.numbers) AS snums
+					FROM
+						invest.t_credit tc
+					WHERE
+						tc.member_id = #{memberId}
+					AND tc.`NUMBERS` > 0
+					GROUP BY
+						tc.subject_no
+				) sc,
+				(
+					SELECT
+						itc.`NUMBERS` AS nums,
+						itc.subject_no AS subject_no
+					FROM
+						invest.`t_credit` itc
+					WHERE
+						itc.member_id = itc.subject_no
+				) it,
+				invest.t_subject_repay_info ri,
+				(
+					SELECT
+						ti.subject_no,
+						ti.subject_type
+					FROM
+						invest.t_invest_subject ti
+					WHERE
+						ti.subject_type != '5'
+				) tis
+			WHERE
+				sc.subject_no = it.subject_no
+			AND ri.SUBJECT_NO = it.subject_no
+			AND tis.subject_no = ri.subject_no
+      ]]>    
+ </select>
+ 
+ <select id="getAccumulateInvestInfo"  resultType="Map">          
+      <![CDATA[ 			
+		SELECT
+			o. STATUS,
+			IFNULL(SUM(o.AMOUNT), 0) AS amonut,
+			count(0) investNums
+		FROM
+			invest.t_bid_order o
+		WHERE
+			o. STATUS = 'BID_SUCCESS'
+		AND o.MEMBER_ID = #{memberId}
+      ]]>    
+ </select>
+ 
+  <select id="getAccumulaterRecoveryInfo"  resultType="Map">          
+      <![CDATA[ 			
+			SELECT
+			    d.STATUS,
+				IFNULL(SUM(d.PRINCIPAL),0) as principal,
+			    IFNULL(SUM(d.INTEREST),0) as interest
+			FROM
+				invest.t_recovery_order_detail d
+			WHERE
+				1 = 1
+			AND d.STATUS IN ('CURSUCCESS','SUCCESS') 
+			AND d.MEMBER_ID = #{memberId}
+			GROUP BY d.STATUS;
+      ]]>    
+ </select>
+  
+	
+	
+</mapper>

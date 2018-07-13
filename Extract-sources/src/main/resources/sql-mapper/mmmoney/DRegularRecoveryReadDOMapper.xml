@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DRegularRecoveryReaderDao">
+  
+    <select id="readCreateFromRecovery" resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+            SELECT
+			    t1.RECOVERY_ORDER_DETAIL_NO,
+				t1.MEMBER_ID ,
+				t1.AMOUNT ,
+				t1.PRINCIPAL ,
+				t1.INTEREST ,
+			    t4.REPAY_TERM,
+			    t4.TOTAL_TERM,
+				t2.SUBJECT_NO ,
+				t3.LOAN_TERM ,
+				t1.CREATE_TIME 
+			FROM
+				invest.t_recovery_order_detail t1
+			LEFT JOIN invest.t_credit t2 ON t1.CREDIT_ID = t2.CREDIT_ID
+			LEFT JOIN invest.t_invest_subject t3 ON t2.SUBJECT_NO = t3.SUBJECT_NO
+			LEFT JOIN invest.t_recovery_order t4 ON t4.RECOVERY_ORDER_NO = t1.RECOVERY_ORDER_NO
+			WHERE
+				t3.SUBJECT_TYPE <> '5'
+				AND  t1.CREATE_TIME >= #{beginTime}
+                AND  t1.CREATE_TIME < #{endTime} 
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  	
+  	<select id="readModifiedFromRecovery" resultType="Map">
+     <!--  <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+            SELECT
+			    t1.RECOVERY_ORDER_DETAIL_NO,
+				t1.MEMBER_ID ,
+				t1.AMOUNT ,
+				t1.PRINCIPAL ,
+				t1.INTEREST ,
+			    t4.REPAY_TERM,
+			    t4.TOTAL_TERM,
+				t2.SUBJECT_NO ,
+				t3.LOAN_TERM ,
+				t1.CREATE_TIME 
+			FROM
+				invest.t_recovery_order_detail t1
+			LEFT JOIN invest.t_credit t2 ON t1.CREDIT_ID = t2.CREDIT_ID
+			LEFT JOIN invest.t_invest_subject t3 ON t2.SUBJECT_NO = t3.SUBJECT_NO
+			LEFT JOIN invest.t_recovery_order t4 ON t4.RECOVERY_ORDER_NO = t1.RECOVERY_ORDER_NO
+			WHERE
+				t3.SUBJECT_TYPE <> '5'
+				AND  t1.MODIFIED_TIME >= #{beginTime}
+                AND  t1.MODIFIED_TIME < #{endTime} 
+                AND  t1.CREATE_TIME < #{beginTime} 
+      ]]> 
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+
+  
+
+</mapper>

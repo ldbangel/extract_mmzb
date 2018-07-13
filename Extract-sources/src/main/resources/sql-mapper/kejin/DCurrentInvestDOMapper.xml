@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DCurrentInvestDao">
+    
+  <sql id="Base_Column_List" >        
+		bidOrderNo,
+		memberId,
+		subjectNo,
+		subjectName,
+		subjectLife,
+		subjectType,
+		rate,
+		repayType,
+		amount,
+		fee,
+		operation,
+		operationDate,
+		subjectStatus,
+		GMT_CREATE,
+		GMT_MODIFIED     
+      
+  </sql>
+  
+ <select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DCurrentInvetModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_current_invest
+       where 1=1 
+       <if test="bidOrderNos != null and bidOrderNos.size() > 0" >
+          AND bidOrderNo in 
+            <foreach collection="bidOrderNos" item="bidOrderNo" open="(" separator="," close=")">
+			   #{bidOrderNo}
+            </foreach> 
+       </if>  
+  
+  </select>
+    <select id="selectByRangeTime" resultType="com.kejin.extract.entity.kejinTest.DCurrentInvetModel">
+		select
+		<include refid="Base_Column_List" />
+		from d_current_invest
+		where operationDate>#{startDate} AND  operationDate&lt;=#{endDate}
+	</select>
+
+
+    <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DCurrentInvetModel" >
+	    INSERT INTO `d_current_invest` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{bidOrderNo,jdbcType=VARCHAR},
+		    #{memberId,jdbcType=VARCHAR},
+			#{subjectNo,jdbcType=VARCHAR},
+			#{subjectName,jdbcType=VARCHAR},
+			#{subjectLife,jdbcType=VARCHAR},
+			#{subjectType,jdbcType=VARCHAR},
+			#{rate,jdbcType=DECIMAL},
+			#{repayType,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{fee,jdbcType=DECIMAL},
+			#{operation,jdbcType=VARCHAR},
+			#{operationDate,jdbcType=TIMESTAMP},
+			#{subjectStatus,jdbcType=VARCHAR},     
+		    now(),
+		    now()
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DCurrentInvetModel" >
+		update `d_current_invest`
+			set
+			<if test="subjectNo!=null">	
+				subjectNo =#{subjectNo,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectName!=null">	
+				subjectName= #{subjectName,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectLife!=null">	
+				subjectLife= #{subjectLife,jdbcType=VARCHAR},
+			</if>
+			<if test="subjectType!=null">	
+				subjectType =#{subjectType,jdbcType=VARCHAR},
+			</if>
+			<if test="rate!=null">	
+				rate =#{rate,jdbcType=DECIMAL},
+			</if>
+			<if test="repayType!=null">	
+				repayType =#{repayType,jdbcType=VARCHAR},
+			</if>
+			<if test="amount!=null">	
+				amount=#{amount,jdbcType=VARCHAR},
+			</if>
+			<if test="fee!=null">
+			    fee = #{fee,jdbcType=DECIMAL},
+			</if>
+			<if test="operation!=null">	
+				operation=#{operation,jdbcType=VARCHAR},			
+			</if>
+			<if test="operationDate!=null">				
+				operationDate=#{operationDate,jdbcType=TIMESTAMP},
+			</if>			
+     	GMT_MODIFIED = now()
+	    WHERE bidOrderNo = #{bidOrderNo,jdbcType=VARCHAR}
+  </update> 	
+	
+</mapper>

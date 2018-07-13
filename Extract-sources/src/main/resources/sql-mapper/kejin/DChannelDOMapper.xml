@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DChannelDao">
+
+  <sql id="Base_Column_List" >        
+	memberId,
+	channel_name,
+	phone,
+	f_code,
+	zone,
+	description,
+	create_time,
+	GMT_CREATE,
+	GMT_MODIFIED   
+  </sql>
+  
+  <insert id="insertList" parameterType="java.util.List" useGeneratedKeys="true">  
+    INSERT INTO `d_channel` (
+	 	<include refid="Base_Column_List" />
+	)
+	VALUES
+	<foreach collection="list" item="model"  separator="," >
+		(    
+		  	#{model.memberId, jdbcType=VARCHAR},
+		  	#{model.name, jdbcType=VARCHAR},
+			#{model.phone, jdbcType=VARCHAR},
+			#{model.fCode, jdbcType=VARCHAR},
+			#{model.zone, jdbcType=INTEGER},
+			#{model.description, jdbcType=VARCHAR},
+			#{model.createTime, jdbcType=TIMESTAMP},
+		    now(),
+		    now()
+		) 
+	</foreach>	  
+  </insert> 
+  
+</mapper>

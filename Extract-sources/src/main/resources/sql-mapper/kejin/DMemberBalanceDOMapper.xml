@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DMemberBalanceDao">
+
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DMemberBalanceModel">
+    <id column="MEMBER_ID" jdbcType="VARCHAR" property="memberId" />
+    <result column="SETTLE_DATE" jdbcType="VARCHAR" property="settleDate" />
+    <result column="mem_type" jdbcType="INTEGER" property="memType" />
+    <result column="IDENTITY" jdbcType="VARCHAR" property="phoneNum" />
+    <result column="AUTH_NAME" jdbcType="VARCHAR" property="authName" />
+    <result column="R_MEMBER_ID" jdbcType="VARCHAR" property="rMemberId" />
+    <result column="R_IDENTITY" jdbcType="VARCHAR" property="rPhoneNum" />
+    <result column="R_AUTH_NAME" jdbcType="VARCHAR" property="rAuthName" />
+    <result column="R_FRIEND_CODE" jdbcType="VARCHAR" property="rFriendCode" />
+    <result column="BALANCE" jdbcType="DECIMAL" property="balance" />
+    <result column="CREDIT_NUMBERS" jdbcType="DECIMAL" property="creditNumbers" />
+    <result column="BLOCKED_FUND" jdbcType="DECIMAL" property="blockedFund" />
+    <result column="amount" jdbcType="DECIMAL" property="totalAmount" />
+    <result column="GMT_CREATE" jdbcType="DATE" property="GMT_CREATE" />
+    <result column="platform_user_no" jdbcType="VARCHAR" property="platformUserNo" />
+    <result column="user_role" jdbcType="VARCHAR" property="userRole" />
+  </resultMap>
+
+	<sql id="Base_Column_List" >        
+		SETTLE_DATE,
+		MEMBER_ID,
+		mem_type,
+		IDENTITY,
+		AUTH_NAME,
+		R_MEMBER_ID,
+		R_IDENTITY,
+		R_AUTH_NAME,
+		R_FRIEND_CODE,
+		BALANCE,
+		CREDIT_NUMBERS,
+		BLOCKED_FUND,
+		GMT_CREATE,
+		platform_user_no,
+		user_role
+	</sql>
+	
+	<select id="selectMemberBalanceInfo" parameterType="java.util.Date" resultMap="BaseResultMap">
+		SELECT 
+			<include refid="Base_Column_List" />,
+			sum(BALANCE + CREDIT_NUMBERS + BLOCKED_FUND) amount 
+		FROM 
+			d_member_balance 
+		WHERE 
+			SETTLE_DATE = DATE_FORMAT(#{date}, '%Y%m%d')
+		AND MEMBER_ID != '100000420401' 
+		GROUP BY platform_user_no
+		ORDER BY amount DESC
+	</select>
+	
+	<select id="selectPlatformUserNo" resultType="java.lang.String">
+		SELECT
+			platform_user_no
+		FROM
+			d_member_balance
+		WHERE
+			SETTLE_DATE = DATE_FORMAT(SUBDATE(curdate(), INTERVAL 1 DAY),'%Y%m%d')
+	</select>
+  
+	<insert id="insertMemberBalances" parameterType="java.util.List" useGeneratedKeys="true">
+	    INSERT INTO `d_member_balance` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		<foreach collection="dMemberBalanceModels" item="model" index="index" separator=",">
+		  (    
+		    #{model.settleDate, jdbcType=VARCHAR},
+		    #{model.memberId, jdbcType=VARCHAR},
+			3,
+			#{model.phoneNum, jdbcType=VARCHAR},
+			#{model.authName, jdbcType=VARCHAR},
+			#{model.rMemberId, jdbcType=VARCHAR},
+			#{model.rPhoneNum, jdbcType=VARCHAR},
+			#{model.rAuthName, jdbcType=VARCHAR},
+			#{model.rFriendCode, jdbcType=VARCHAR},
+			IFNULL(#{model.balance, jdbcType=DECIMAL},0),  
+			IFNULL(#{model.creditNumbers, jdbcType=DECIMAL},0),
+			IFNULL(#{model.blockedFund, jdbcType=DECIMAL},0),  
+		    now(),
+		    #{model.platformUserNo, jdbcType=VARCHAR},
+		    #{model.userRole, jdbcType=VARCHAR}
+		  )
+		</foreach>  
+    </insert>
+    
+    <insert id="insertMemberBalanceSingle" parameterType="com.kejin.extract.entity.kejinTest.DMemberBalanceModel">
+    	INSERT INTO `d_member_balance` (
+    		<include refid="Base_Column_List" />
+		)
+		VALUES
+		(
+			#{settleDate, jdbcType=VARCHAR},
+		    #{memberId, jdbcType=VARCHAR},
+			3,
+			#{phoneNum, jdbcType=VARCHAR},
+			#{authName, jdbcType=VARCHAR},
+			#{rMemberId, jdbcType=VARCHAR},
+			#{rPhoneNum, jdbcType=VARCHAR},
+			#{rAuthName, jdbcType=VARCHAR},
+			#{rFriendCode, jdbcType=VARCHAR},
+			IFNULL(#{balance, jdbcType=DECIMAL},0),  
+			IFNULL(#{creditNumbers, jdbcType=DECIMAL},0),
+			IFNULL(#{blockedFund, jdbcType=DECIMAL},0),  
+		    now(),
+		    #{platformUserNo, jdbcType=VARCHAR},
+		    #{userRole, jdbcType=VARCHAR}
+		)
+    </insert> 
+    
+    <update id="updateBalanceByPlatformUserNo" parameterType="com.kejin.extract.entity.kejinTest.DMemberBalanceModel">
+    	UPDATE d_member_balance
+		SET BALANCE = #{balance}
+		WHERE
+			platform_user_no = #{platformUserNo}
+		AND SETTLE_DATE = DATE_FORMAT(SUBDATE(curdate(), INTERVAL 1 DAY),'%Y%m%d')
+    </update>
+    
+    <delete id="deleteEmptyBalances">
+    	DELETE
+		FROM
+			d_member_balance
+		WHERE
+			BALANCE = 0
+		AND CREDIT_NUMBERS = 0
+		AND BLOCKED_FUND = 0
+		AND SETTLE_DATE = DATE_FORMAT(#{time},'%Y%m%d')
+    </delete>
+
+</mapper>

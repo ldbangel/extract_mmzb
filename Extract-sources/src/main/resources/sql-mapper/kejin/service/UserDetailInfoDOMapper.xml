@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.UserDetailInfoDao">
+    
+  <select id="queryUserBaseInfo"   resultType="com.kejin.extract.entity.service.UserBaseInfoModel">
+   	SELECT
+		u.memberId,
+		u. NAME,
+		TIMESTAMPDIFF(YEAR, u.age, CURDATE()) AS age,
+		u.gender,
+		CONCAT(
+			u.phoneProvince,
+			u.phoneCity
+		) AS nativeCity,
+		u.certNum,
+		u.phone,
+		(
+			SELECT
+				t. NAME
+			FROM
+				d_user t
+			WHERE
+				t.friendCode = u.recommandFriendCode
+			GROUP BY memberId
+		) AS origin,
+		u.registerDatetime,
+		u.tieCarDatetime,
+		u.firstInvestDatetime,
+		u.financialManager managerName,
+		u.firstInvestAmount,
+		u.bankCardHeadOffice,
+		u.platform_user_no platformUserNo,
+		u.user_role userRole
+	FROM
+		d_user u
+	WHERE
+		u.phone = #{phone}
+		AND u.user_role = 'INVESTOR'  
+  </select>
+   
+  <select id="getAccumulateCash"   resultType="Map">
+       SELECT
+			sum(c.amount) as cashAmount
+		FROM
+			d_cash c
+		WHERE
+			c.memberId = #{memberId};
+  </select>
+  
+  <select id="getAccumulateCharge"   resultType="Map">
+  		SELECT
+			SUM(ch.amount) as chargeAmount
+		FROM
+			d_charge ch
+		WHERE
+			ch.memberId = #{memberId};
+       
+  </select>
+  
+  <select id="queryChargeInfo"   resultType="com.kejin.extract.entity.service.ChargeInfoModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" />  -->    
+      <![CDATA[ 			
+			SELECT
+				ch.amount as amount,
+			 	ch.payDate as chargeDate,
+			  	ch.online as chargeMethod,
+			  	'success' as status
+			FROM
+				d_charge ch			
+			WHERE
+				ch.memberId = #{memberId}
+			AND ch.payDate >=#{beginTime}
+			AND ch.payDate < #{endTime}
+			ORDER BY ch.payDate desc
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  </select>
+  
+  <select id="queryCashInfo"   resultType="com.kejin.extract.entity.service.CashInfoModel">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" />   -->   
+      <![CDATA[ 			
+		SELECT
+			c.amount as amount,
+		  	c.orderTime as cashDate,
+		  	c.payStatus as status
+		FROM
+			d_cash c		
+		WHERE
+			c.memberId = #{memberId}
+		AND c.orderTime >=#{beginTime}
+		AND c.orderTime < #{endTime}
+		ORDER BY c.orderTime DESC
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  </select>
+
+	<update id="updateFinancialManagerByMemberId">
+		UPDATE d_user AS u
+		SET
+			u.financialManager=#{financialManager},
+			u.userSource=#{userSource},
+			u.GMT_MODIFIED=now()
+		WHERE
+			u.memberId = #{memberId}
+		AND u.user_role = 'INVESTOR'
+	</update>
+
+	<update id="updateFinancialManagerByPhone">
+		UPDATE d_user AS u
+		SET
+			u.financialManager=#{financialManager},
+			u.userSource=#{userSource},
+			u.GMT_MODIFIED=now()
+		WHERE
+			u.phone = #{phone}
+		AND u.user_role = 'INVESTOR'
+	</update>
+
+	<update id="addFinancialManagerByMemberId">
+		UPDATE d_user AS u
+		SET
+		u.financialManager=#{financialManager},
+		u.userSource=#{userSource},
+		u.GMT_MODIFIED=now()
+		WHERE
+			u.memberId = #{memberId} 
+		AND u.user_role = 'INVESTOR'
+		AND u.financialManager is NULL
+	</update>
+
+	<update id="addFinancialManagerByPhone">
+		UPDATE d_user AS u
+		SET
+		u.financialManager=#{financialManager},
+		u.userSource=#{userSource},
+		u.GMT_MODIFIED=now()
+		WHERE
+			u.phone = #{phone} 
+		AND u.user_role = 'INVESTOR'
+		AND u.financialManager IS NULL
+	</update>
+
+	<select id="memberIdExists" resultType="boolean">
+		SELECT EXISTS (SELECT 1 FROM d_user u WHERE u.memberId=#{memberId})
+	</select>
+
+</mapper>

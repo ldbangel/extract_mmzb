@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.BusinessReportInfoDao">
+    
+ <select id="getBusinessManagerAchievementInfo" resultType="java.util.Map">
+	SELECT
+		IFNULL(
+			IF (t2.userSource = "小计",
+				(
+					SELECT
+						`name`
+					FROM
+						d_employee
+					WHERE
+						f_code = t2.`客户经理朋友码`
+					AND status = '1'
+				),
+				" "
+			),
+			"总计"
+		) manager,
+		t2.`客户经理朋友码` fcode,
+	IF (
+		t2.userSource = "小计",
+		" ",
+		t2.userSource
+	) userSource,
+	 t2.`新增` newInvest,
+	 t2.`复投` reinvest,
+	 IFNULL(t2.`新增`, 0) + IFNULL(t2.`复投`, 0) allAmount,
+	 CONVERT (
+		t2.`年化投资`,
+		DECIMAL (19, 2)
+	) yearInvest,
+	 t2.`复投率` reinvestRate,
+	 IFNULL(t3.nums, 0) newNum
+	FROM
+		(
+			SELECT
+				a.客户经理朋友码,
+				a.userSource,
+				sum(a.新增) 新增,
+				sum(a.复投) 复投,
+				sum(a.总投资) 总投资,
+				sum(a.年化投资) 年化投资,
+				sum(a.回款) 回款,
+	
+			IF (
+				sum(a.回款) = 0,
+				0,
+				least(
+					sum(a.复投) / sum(a.回款),
+					1
+				)
+			) 复投率
+			FROM
+				(
+					SELECT
+						IFNULL(c.f_code, "总计") 客户经理朋友码,
+						IFNULL(t1.userSource, "小计") userSource,
+						sum(ifnull(t.newAmount, 0)) 新增,
+						sum(ifnull(t.reinvestAmount, 0)) 复投,
+						sum(t.invest_amount) 总投资,
+						sum(t.invest_amount * t.terms / 12) 年化投资,
+						SUM(ifnull(t.recoveryAmount, 0)) 回款,
+						least(
+							sum(ifnull(t.reinvestAmount, 0)) / SUM(ifnull(t.recoveryAmount, 0)),
+							1
+						) 复投率
+					FROM
+						(
+							SELECT
+								a.memberId,
+								a.recoveryAmount,
+								a.newAmount,
+								a.reinvestAmount,
+								a.transactionType,
+								ifnull(a.reinvestAmount, 0) + ifnull(a.newAmount, 0) invest_amount,
+	
+							IF (
+								a.subjectlife LIKE '%月',
+								substring(
+									a.subjectlife,
+									1,
+									LOCATE('月', a.subjectlife) - 1
+								),
+								LEFT (
+									a.subjectlife,
+									LENGTH(a.subjectlife) - 0
+								) / 30
+							) terms
+							FROM
+								kejinTest.d_reinvest_and_new a
+							WHERE
+								a.transactionType IN ('1', '4')
+							<if test="beginTime!=null">
+								<![CDATA[ AND a.operationDate >= #{beginTime} ]]>
+							</if>
+							<if test="endTime!=null">
+								<![CDATA[ AND a.operationDate < #{endTime} ]]>
+							</if>
+						) t
+					LEFT JOIN kejinTest.d_user t1 ON t.memberId = t1.memberId
+					LEFT JOIN (
+						SELECT
+							`name`,
+							f_code
+						FROM
+							d_employee
+						WHERE
+							`status` = '1'
+						AND personType = '业务人员'
+					) c ON t1.financialManager = c.`name`
+					LEFT JOIN (
+						SELECT
+							f_code
+						FROM
+							d_employee
+						WHERE
+							`status` = '1'
+						AND personType = '业务人员'
+					) c1 ON t1.recommandFriendCode = c1.f_code
+					WHERE
+						c.`name` IS NOT NULL
+					GROUP BY
+						c.f_code,
+						t1.userSource WITH ROLLUP
+				) a
+			GROUP BY
+				a.客户经理朋友码,
+				a.userSource
+		) t2
+	LEFT JOIN (
+		SELECT
+			c1.f_code,
+			count(DISTINCT t4.memberId) nums
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					kejinTest.d_user
+				WHERE
+					user_role = 'INVESTOR'
+			) t4
+		LEFT JOIN (
+			SELECT
+				f_code
+			FROM
+				d_employee
+			WHERE
+				`status` = '1'
+			AND personType = '业务人员'
+		) c1 ON t4.recommandFriendCode = c1.f_code
+		WHERE
+			c1.f_code IS NOT NULL
+		<if test="beginTime!=null">
+			<![CDATA[ AND t4.firstInvestDatetime >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t4.firstInvestDatetime < #{endTime} ]]>
+		</if>
+		GROUP BY
+			c1.f_code
+	) t3 ON t2.`客户经理朋友码` = t3.f_code
+	AND (
+		t2.userSource = '小计'
+		OR t2.userSource = '个人'
+	)
+	ORDER BY
+		t2.`客户经理朋友码`,
+		t2.userSource DESC;
+ </select>
+	
+</mapper>

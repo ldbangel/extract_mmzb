@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.BaseInfoDao">
+    
+ <select id="getBaseUserInfo"  resultType="com.kejin.extract.entity.service.BaseUserInfoModel">     
+      <![CDATA[ 			
+			SELECT
+				IFNULL(count(1),0) AS registerNum,
+				HOUR (u.registerDatetime) AS registerHour
+			FROM
+				d_user u
+			WHERE
+				u.registerDatetime >= #{beginTime}
+			AND u.registerDatetime < #{endTime}
+			GROUP BY
+				registerHour
+			ORDER BY
+	            registerHour;
+      ]]> 
+ </select>
+  
+ 
+ 
+  <select id="getBaseInvestInfo"  resultType="com.kejin.extract.entity.service.BaseInvestInfoModel">     
+      <![CDATA[ 
+			SELECT
+				IFNULL(count(1),0) AS investNum,
+				IFNULL(sum(i.amount),0) AS investAmount,
+				HOUR (i.operationDate) AS investHour
+
+			FROM
+				d_regular_invest i
+			WHERE
+				i.operationDate >= #{beginTime}
+			AND i.operationDate < #{endTime}
+			GROUP BY
+				investHour
+			ORDER BY
+	            investHour;
+      ]]> 
+     
+  </select>  
+  
+	
+	
+</mapper>

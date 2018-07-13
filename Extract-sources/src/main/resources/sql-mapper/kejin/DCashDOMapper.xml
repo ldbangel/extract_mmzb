@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DCashDao">
+
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DCashModel">
+    <id column="memberId" property="memberId" jdbcType="VARCHAR"/>
+    <result column="paymentOrderNo" property="paymentOrderNo" jdbcType="VARCHAR"/>
+    <result column="name" property="name" jdbcType="VARCHAR"/>
+    <result column="phone" property="phone"  jdbcType="VARCHAR"/>
+    <result column="amount" property="amount" jdbcType="DECIMAL" />
+    <result column="cardNo" property="cardNo"  jdbcType="VARCHAR"/>
+    <result column="fee" property="fee" jdbcType="DECIMAL" />
+    <result column="payStatus" property="payStatus" jdbcType="VARCHAR" />
+    <result column="confirmStatus" property="confirmStatus" jdbcType="VARCHAR" />
+    <result column="orderTime" property="orderTime" jdbcType="DATE" />
+    <result column="resultTime" property="resultTime" jdbcType="DATE" />
+    <result column="GMT_CREATE" property="GMT_CREATE" jdbcType="DATE" />
+    <result column="GMT_MODIFIED" property="GMT_MODIFIED" jdbcType="DATE" />
+    <result column="platform_user_no" property="platformUserNo" jdbcType="VARCHAR" />
+    <result column="user_role" property="userRole" jdbcType="VARCHAR" />
+  </resultMap>
+    
+  <sql id="Base_Column_List" >        
+		paymentOrderNo,
+		memberId,
+		name,
+		phone,
+		amount,
+		cardNo,
+		fee,
+		payStatus,
+		confirmStatus,
+		orderTime,
+		resultTime,
+		GMT_CREATE,
+		GMT_MODIFIED,
+		platform_user_no,
+		user_role
+  </sql>
+  
+ <select id="select" parameterType="Map" resultMap="BaseResultMap">
+       select 
+           <include refid="Base_Column_List" />
+       from d_cash
+       where 1=1 
+       <if test="paymentOrderNos != null and paymentOrderNos.size() > 0" >
+          AND paymentOrderNo in 
+            <foreach collection="paymentOrderNos" item="paymentOrderNo" open="(" separator="," close=")">
+			   #{paymentOrderNo}
+            </foreach> 
+       </if>  
+  
+  </select>
+  
+  
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DCashModel" >  
+	    INSERT INTO `d_cash` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		  	#{paymentOrderNo,jdbcType=VARCHAR},
+			#{memberId,jdbcType=VARCHAR},
+			#{name,jdbcType=VARCHAR},
+			#{phone,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{cardNo,jdbcType=VARCHAR},
+			#{fee,jdbcType=DECIMAL},
+			#{payStatus,jdbcType=VARCHAR},
+			#{confirmStatus,jdbcType=VARCHAR},
+			#{orderTime,jdbcType=TIMESTAMP},
+			#{resultTime,jdbcType=TIMESTAMP},
+		    now(),
+		    now(),
+		   	#{platformUserNo,jdbcType=VARCHAR}, 
+		   	#{userRole,jdbcType=VARCHAR}
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DCashModel" >
+  	update `d_cash`
+	set
+	     <if test="memberId!=null">
+			memberId=#{memberId,jdbcType=VARCHAR},
+		 </if>
+		 <if test="name!=null">
+			name=#{name,jdbcType=VARCHAR},
+		 </if>
+		 <if test="phone!=null">
+			phone=#{phone,jdbcType=VARCHAR},
+		 </if>
+		 <if test="cardNo!=null">
+			cardNo=#{cardNo,jdbcType=VARCHAR},
+		 </if>
+		 <if test="amount!=null">
+			amount=#{amount,jdbcType=DECIMAL},
+		 </if>
+		 <if test="fee!=null">
+			fee=#{fee,jdbcType=DECIMAL},
+		 </if>
+		 <if test="payStatus!=null">
+			payStatus=#{payStatus,jdbcType=VARCHAR},
+		 </if>
+		 <if test="confirmStatus!=null">
+			confirmStatus=#{confirmStatus,jdbcType=VARCHAR},
+		 </if>
+		 <if test="orderTime!=null">
+			orderTime=#{orderTime,jdbcType=TIMESTAMP},
+		 </if>
+		 <if test="resultTime!=null">
+			resultTime = #{resultTime,jdbcType=TIMESTAMP},
+		 </if>	
+		 <if test="platformUserNo!=null">
+			platform_user_no = #{platformUserNo,jdbcType=VARCHAR},
+		 </if>	
+		 <if test="userRole!=null">
+			user_role = #{userRole,jdbcType=VARCHAR},
+		 </if>
+     	GMT_MODIFIED = now()
+	    WHERE paymentOrderNo = #{paymentOrderNo,jdbcType=VARCHAR}
+  </update> 
+  
+</mapper>

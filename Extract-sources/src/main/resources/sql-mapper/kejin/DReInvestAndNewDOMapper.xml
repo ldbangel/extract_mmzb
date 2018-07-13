@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DReInvestAndNewDao">
+    
+  <sql id="Base_Column_List" >        
+		orderNo,
+		memberId,
+		subjectLife,
+		transactionType,
+		amount,
+		recoveryTotal,
+		recoveryAmount,
+		reinvestAmount,
+		newAmount,
+		operationDate,
+		GMT_CREATE,
+		GMT_MODIFIED
+  </sql>
+
+	<insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DReInvestAndNewModel">
+		INSERT IGNORE INTO `d_reinvest_and_new` (
+		<include refid="Base_Column_List" />
+		)
+		VALUES
+		(
+		#{orderNo,jdbcType=VARCHAR},
+		#{memberId,jdbcType=VARCHAR},
+		#{subjectLife,jdbcType=DECIMAL},
+		#{transactionType,jdbcType=DECIMAL},
+		#{amount,jdbcType=DECIMAL},
+		#{recoveryTotal,jdbcType=VARCHAR},
+		#{recoveryAmount,jdbcType=VARCHAR},
+		#{reinvestAmount,jdbcType=VARCHAR},
+		#{newAmount,jdbcType=VARCHAR},
+		#{operationDate,jdbcType=TIMESTAMP},
+		now(),
+		now()
+		) ;
+	</insert>
+
+	<insert id="insertList" parameterType="java.util.List">
+		INSERT IGNORE INTO `d_reinvest_and_new` (
+		<include refid="Base_Column_List" />
+		)
+		VALUES
+		<foreach collection="reInvestAndNewModels" item="model" index="index" separator=",">
+			(#{model.orderNo,jdbcType=VARCHAR},
+			#{model.memberId,jdbcType=VARCHAR},
+			#{model.subjectLife,jdbcType=VARCHAR},
+			#{model.transactionType,jdbcType=VARCHAR},
+			#{model.amount,jdbcType=DECIMAL},
+			#{model.recoveryTotal,jdbcType=DECIMAL},
+			#{model.recoveryAmount,jdbcType=DECIMAL},
+			#{model.reinvestAmount,jdbcType=DECIMAL},
+			#{model.newAmount,jdbcType=DECIMAL},
+			#{model.operationDate,jdbcType=TIMESTAMP},
+			now(),
+			now()
+		  	)
+		</foreach>
+ 	</insert>
+
+	<update id="updateAmounts" parameterType="com.kejin.extract.entity.kejinTest.DReInvestAndNewModel">
+		update `d_reinvest_and_new`
+		set
+			recoveryTotal=#{recoveryTotal,jdbcType=DECIMAL},
+			reinvestAmount=#{reinvestAmount,jdbcType=DECIMAL},
+			newAmount =#{newAmount,jdbcType=DECIMAL},
+			GMT_MODIFIED = now()
+		WHERE id = #{id}
+	</update>
+
+	<select id="getLatestDate" resultType="date">
+		SELECT 
+			max(operationDate) 
+		FROM 
+			d_reinvest_and_new
+		WHERE 
+			transactionType=#{transactionType}
+	</select>
+
+	<select id="findMemberIdsByRangeDate" resultType="string">
+		SELECT 
+			DISTINCT memberId  
+		FROM 
+			d_reinvest_and_new
+		WHERE  
+			operationDate>#{startDate} AND operationDate &lt;= #{endDate}
+	</select>
+	
+	<select id="selectByMemberIdAndEndDate" resultType="com.kejin.extract.entity.kejinTest.DReInvestAndNewModel">
+		SELECT 
+			id,orderNo,memberId,subjectLife,transactionType,amount,recoveryTotal,recoveryAmount,reinvestAmount,newAmount,operationDate
+		FROM 
+			d_reinvest_and_new
+		WHERE memberId=#{memberId}
+			AND operationDate &lt;=#{endDate}
+			AND operationDate >= ifnull((SELECT MAX(t.operationDate) FROM d_reinvest_and_new t WHERE t.memberId=#{memberId} AND t.operationDate &lt;=#{startDate}),'2015-01-01 00:00:00')
+		ORDER BY operationDate ASC
+	</select>
+	
+	<select id="selectForFixData" resultType="com.kejin.extract.entity.kejinTest.DReInvestAndNewModel">
+		SELECT 
+			id,orderNo,memberId,subjectLife,transactionType,amount,recoveryTotal,recoveryAmount,reinvestAmount,newAmount,operationDate
+		FROM 
+			d_reinvest_and_new
+		WHERE memberId = #{memberId}
+			AND operationDate &lt;= #{endDate}
+			AND operationDate >= ifnull((SELECT MAX(t.operationDate) FROM d_reinvest_and_new t WHERE t.memberId=#{memberId} AND t.operationDate &lt; #{startDate}), #{startDate})
+		ORDER BY operationDate ASC
+	</select>
+	
+	<delete id="deleteBidFailData">
+		DELETE FROM d_reinvest_and_new WHERE orderNo = #{orderNo}
+	</delete>
+
+</mapper>

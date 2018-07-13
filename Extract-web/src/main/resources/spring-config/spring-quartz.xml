@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+			
+	<bean id="parentTaskJobDetail" abstract="true">
+		<property name="targetMethod">
+			<value>execute</value>
+		</property>
+		<property name="concurrent">
+			<value>false</value>
+		</property>
+
+    </bean>
+
+    <bean id="extractQuartzFactoryBean" lazy-init="false"
+          class="com.kejin.extract.time.task.common.SwitchableSchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+            	<!-- sync DB -->
+                <ref bean="extractDUserDataDaemonTrigger" />
+                <ref bean="extractDBonusDataDaemonTrigger" />
+                <ref bean="extractDCashDataDaemonTrigger" />
+                <ref bean="extractDChargeDataDaemonTrigger" />
+                <ref bean="extractDRegularInvestDataDaemonTrigger" />
+                <ref bean="extractDRegularRecoveryDataDaemonTrigger" />
+                <ref bean="extractDCreditAssignmentDataDaemonTrigger" /> 
+                <ref bean="extractDProductDataDaemonTrigger" />
+                <ref bean="extractDReInvestAndNewDataDaemonTrigger"/>
+                <ref bean="extractDLoanDataDaemonTrigger"/>
+                <ref bean="extractDChannelDataDaemonTrigger"/>
+                <ref bean="extractDMemberBalanceDataDaemonTrigger"/>
+                <ref bean="extractDUpdateSettleBalanceDaemonTrigger"/>
+                <!-- sync dingding address list -->
+                <ref bean="syncDingDingAddressListDaemonTrigger" />
+                
+                <!-- <ref bean="extractDNewInvestDataDaemonTrigger"/> -->
+                <!-- remove empty member balance notes -->
+                <!-- <ref bean="removeEmptyMemberBalanceDataDaemonTrigger"/> -->
+                
+                <!-- excel export -->
+                <ref bean="dayMemberBalanceDaemonTrigger"/>
+                
+                <!-- day/week/month Mail -->
+                <ref bean="operationDayMailDaemonTrigger" />
+                <ref bean="achievementDayMailDaemonTrigger" />
+                <ref bean="actionDetailsDayMailDaemonTrigger" />
+                <ref bean="memberBalanceDayMailDaemonTrigger" />
+                <ref bean="accountBalanceDayMailDaemonTrigger" />
+                <ref bean="customerDistributeDayMailDaemonTrigger" />
+                <ref bean="platformDayMailDaemonTrigger" />
+                <ref bean="tradeRealTimeDataDayMailDaemonTrigger" />
+                <ref bean="partTimeFinancierDayMailDaemonTrigger" />
+                <ref bean="operationWeekMailDaemonTrigger" />
+                <ref bean="achievementWeekMailDaemonTrigger" />
+                <ref bean="operationMonthMailDaemonTrigger" />
+                
+                <!-- screen shot -->
+                <ref bean="screenShotDayDaemonTrigger" />
+                <ref bean="screenShotDayAchievementDaemonTrigger" />
+                <ref bean="screenShotWeekDaemonTrigger" />
+                <ref bean="screenShotMonthDaemonTrigger" />
+                <!-- generater operation pdf -->
+                <ref bean="operationPdfGeneraterDayDaemonTrigger" />
+                <ref bean="operationPdfGeneraterWeekDaemonTrigger" />
+                <ref bean="operationPdfGeneraterMonthDaemonTrigger" />
+                <!-- remove useless files -->
+               	<ref bean="removeSystemUserlessFilesDaemonTrigger" />
+            </list>
+        </property>
+        <property name="startupDelay" value="10" />
+        <property name="available" value="${scheduler.available}" />
+        <property name="quartzProperties"> 
+			<props>			
+				<prop key="org.quartz.scheduler.skipUpdateCheck">true</prop> 
+			</props>
+		</property>
+    </bean>     
+       
+       
+    <!-- 对应的子bean  -->
+    
+    <!-- d_user -->
+    <bean id="extractDUserDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDUserDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDUserDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDUserDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDUserDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDUserDataDaemon"/>
+    
+    <!-- d_product -->
+    <bean id="extractDProductDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDProductDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDProductDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDProductDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDProductDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDProductDataDaemon"/>
+    
+    <!-- d_bonus -->
+    <bean id="extractDBonusDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDBonusDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDBonusDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDBonusDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDBonusDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDBonusDataDaemon"/>
+    
+    <!-- d_Cash -->
+    <bean id="extractDCashDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDCashDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDCashDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDCashDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDCashDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDCashDataDaemon"/>
+    
+    <!-- d_Charge -->
+    <bean id="extractDChargeDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDChargeDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDChargeDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDChargeDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDChargeDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDChargeDataDaemon"/>
+    
+    <!-- d_creditAssignment -->
+    <bean id="extractDCreditAssignmentDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDCreditAssignmentDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDCreditAssignmentDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDCreditAssignmentDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDCreditAssignmentDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDCreditAssignmentDataDaemon"/>
+    
+    
+    <!-- d_currentInvest -->
+    <bean id="extractDCurrentInvestDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDCurrentInvestDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDCurrentInvestDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDCurrentInvestDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDCurrentInvestDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDCurrentInvestDataDaemon"/>
+    
+    <!-- d_currentRecovery -->
+    <bean id="extractDCurrentRecoveryDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDCurrentRecoveryDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDCurrentRecoveryDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDCurrentRecoveryDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDCurrentRecoveryDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDCurrentRecoveryDataDaemon"/>
+    
+    <!-- d_regularInvest -->
+    <bean id="extractDRegularInvestDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDRegularInvestDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDRegularInvestDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDRegularInvestDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDRegularInvestDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDRegularInvestDataDaemon"/>
+    
+     <!-- d_regularRecovery -->
+    <bean id="extractDRegularRecoveryDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDRegularRecoveryDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDRegularRecoveryDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDRegularRecoveryDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="extractDRegularRecoveryDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDRegularRecoveryDataDaemon"/>
+
+    <!-- d_reinvest_and_new -->
+    <bean id="extractDReInvestAndNewDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDReInvestAndNewDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${reinvestAndNew.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDReInvestAndNewDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDReInvestAndNewDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDReInvestAndNewDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDReInvestAndNewDataDaemon"/>
+
+    <!-- d_new_invest -->
+    <bean id="extractDNewInvestDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDNewInvestDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDNewInvestDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDNewInvestDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDNewInvestDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDNewInvestDataDaemon"/>
+    
+    <!-- d_loan 融资客户还款计划明细-->
+    <bean id="extractDLoanDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDLoanDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDLoanDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDLoanDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDLoanDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDLoanDataDaemon"/>
+    
+    <!-- d_channel 渠道表-->
+    <bean id="extractDChannelDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDChannelDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncChannel.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDChannelDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDChannelDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDChannelDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDChannelDataDaemon"/>
+    
+    <!-- d_member_balance  统计个人资产同步到科金数据库 -->
+    <bean id="extractDMemberBalanceDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDMemberBalanceDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${memberInvest.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDMemberBalanceDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDMemberBalanceDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDMemberBalanceDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDMemberBalanceDataDaemon"/>
+    
+    <!-- d_member_balance  同步账户余额 -->
+    <bean id="extractDUpdateSettleBalanceDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDUpdateSettleBalanceDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${memberBalance.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDUpdateSettleBalanceDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDUpdateSettleBalanceDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDUpdateSettleBalanceDaemon" class="com.kejin.extract.time.task.daemon.ExtractDUpdateSettleBalanceDaemon"/>
+    
+    <!-- d_member_balance 删除空资产客户 -->
+    <bean id="removeEmptyMemberBalanceDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="removeEmptyMemberBalanceDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${removeEmptyBalance.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="removeEmptyMemberBalanceDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="removeEmptyMemberBalanceDataDaemon" />
+        </property>
+    </bean>
+    <bean id="removeEmptyMemberBalanceDataDaemon" class="com.kejin.extract.time.task.daemon.RemoveEmptyMemberBalanceDataDaemon"/>
+
+    <!-- day_member_balance 生成个人资产excel表格-->
+    <bean id="dayMemberBalanceDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="dayMemberBalanceDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${exportBalanceExcel.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="dayMemberBalanceDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="dayMemberBalanceDaemon" />
+        </property>
+    </bean>   
+    <bean id="dayMemberBalanceDaemon" class="com.kejin.extract.time.task.daemon.DayMemberBalanceDaemon"/>
+    
+
+    
+    
+    
+    <!-- 邮件部分 -->
+    <!-- day_mail 运营日报邮件发送-->
+    <bean id="operationDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationDayMail.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="operationDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationDayMailDaemon" class="com.kejin.extract.time.task.mail.OperationDayMailDaemon"/>
+    
+    <!-- day_mail 业绩日报邮件发送-->
+    <bean id="achievementDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="achievementDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${achievementDayMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="achievementDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="achievementDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="achievementDayMailDaemon" class="com.kejin.extract.time.task.mail.AchievementDayMailDaemon"/>
+    
+    <!-- day_mail 提现、投资、充值、回款明细日报邮件发送-->
+    <bean id="actionDetailsDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="actionDetailsDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${actionDayMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="actionDetailsDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="actionDetailsDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="actionDetailsDayMailDaemon" class="com.kejin.extract.time.task.mail.ActionDetailsDayMailDaemon"/>
+    
+    <!-- day_mail 个人资产邮件发送-->
+    <bean id="memberBalanceDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="memberBalanceDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${memberBalanceDayMail.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="memberBalanceDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean" parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="memberBalanceDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="memberBalanceDayMailDaemon" class="com.kejin.extract.time.task.mail.MemberBalanceDayMailDaemon"/>
+    
+    <!-- day_mail 账户余额邮件发送-->
+    <bean id="accountBalanceDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="accountBalanceDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${accountBalanceMail.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="accountBalanceDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="accountBalanceDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="accountBalanceDayMailDaemon" class="com.kejin.extract.time.task.mail.AccountBalanceDayMailDaemon"/>
+    
+    <!-- day_mail 新注册用户分配给财富部门  -->
+    <bean id="customerDistributeDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="customerDistributeDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${customerDistributerDayMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="customerDistributeDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="customerDistributeDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="customerDistributeDayMailDaemon" class="com.kejin.extract.time.task.mail.CustomerDistributeDayMailDaemon"/>
+    
+    <!-- day_mail 运营终端日报发送  -->
+    <bean id="platformDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="platformDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${platformDayMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="platformDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="platformDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="platformDayMailDaemon" class="com.kejin.extract.time.task.mail.PlatformDayMailDaemon"/>
+    
+    <!-- day_mail 平台实时交易数据邮件发送  -->
+    <bean id="tradeRealTimeDataDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="tradeRealTimeDataDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${tradeRealTimeDataDayMail.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="tradeRealTimeDataDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="tradeRealTimeDataDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="tradeRealTimeDataDayMailDaemon" class="com.kejin.extract.time.task.mail.TradeRealTimeDataDayMailDaemon"/>
+    
+    <!-- day_mail 兼职理财师日报邮件发送  -->
+    <bean id="partTimeFinancierDayMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="partTimeFinancierDayMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${partTimeFinancierDayMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="partTimeFinancierDayMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="partTimeFinancierDayMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="partTimeFinancierDayMailDaemon" class="com.kejin.extract.time.task.mail.PartTimeFinancierDayMailDaemon"/>
+    
+    <!-- week_mail 运营周报邮件发送-->
+    <bean id="operationWeekMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationWeekMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationWeekMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="operationWeekMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationWeekMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationWeekMailDaemon" class="com.kejin.extract.time.task.mail.OperationWeekMailDaemon"/>
+    
+    <!-- month_mail 运营月报邮件发送-->
+    <bean id="operationMonthMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationMonthMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationMonthMai.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="operationMonthMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationMonthMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationMonthMailDaemon" class="com.kejin.extract.time.task.mail.OperationMonthMailDaemon"/>
+    
+    <!-- week_mail 业绩周报报邮件发送-->
+    <bean id="achievementWeekMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="achievementWeekMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${achievementWeekMail.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="achievementWeekMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="achievementWeekMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="achievementWeekMailDaemon" class="com.kejin.extract.time.task.mail.AchievementWeekMailDaemon"/>
+    
+    <!-- day 屏幕截图 -->
+    <bean id="screenShotDayDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="screenShotDayDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${screenShotDay.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="screenShotDayDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="screenShotDayDaemon" />
+        </property>
+    </bean>   
+    <bean id="screenShotDayDaemon" class="com.kejin.extract.time.task.screenShot.ScreenShotDayDaemon"/>
+    
+    <!-- day 业绩日报屏幕截图 -->
+    <bean id="screenShotDayAchievementDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="screenShotDayAchievementDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${screenShotDayAchievement.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="screenShotDayAchievementDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="screenShotDayAchievementDaemon" />
+        </property>
+    </bean>   
+    <bean id="screenShotDayAchievementDaemon" class="com.kejin.extract.time.task.screenShot.ScreenShotDayAchievementDaemon"/>
+    
+    <!-- week 屏幕截图 -->
+    <bean id="screenShotWeekDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="screenShotWeekDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${screenShotWeek.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="screenShotWeekDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="screenShotWeekDaemon" />
+        </property>
+    </bean>   
+    <bean id="screenShotWeekDaemon" class="com.kejin.extract.time.task.screenShot.ScreenShotWeekDaemon"/>
+    
+    <!-- month 屏幕截图 -->
+    <bean id="screenShotMonthDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="screenShotMonthDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${screenShotMonth.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="screenShotMonthDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="screenShotMonthDaemon" />
+        </property>
+    </bean>   
+    <bean id="screenShotMonthDaemon" class="com.kejin.extract.time.task.screenShot.ScreenShotMonthDaemon"/>
+    
+    <!-- 运营日报pdf生成 -->
+    <bean id="operationPdfGeneraterDayDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationPdfGeneraterDayDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationPdfDay.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="operationPdfGeneraterDayDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationPdfGeneraterDayDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationPdfGeneraterDayDaemon" class="com.kejin.extract.time.task.daemon.OperationPdfGeneraterDayDaemon"/>
+    
+    <!-- 运营周报pdf生成 -->
+    <bean id="operationPdfGeneraterWeekDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationPdfGeneraterWeekDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationPdfWeek.trigger.cron} </value>
+        </property>
+    </bean>
+    <bean id="operationPdfGeneraterWeekDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationPdfGeneraterWeekDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationPdfGeneraterWeekDaemon" class="com.kejin.extract.time.task.daemon.OperationPdfGeneraterWeekDaemon"/>
+    
+    
+    <!-- 运营月报pdf生成 -->
+    <bean id="operationPdfGeneraterMonthDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="operationPdfGeneraterMonthDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${operationPdfMonth.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="operationPdfGeneraterMonthDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="operationPdfGeneraterMonthDaemon" />
+        </property>
+    </bean>   
+    <bean id="operationPdfGeneraterMonthDaemon" class="com.kejin.extract.time.task.daemon.OperationPdfGeneraterMonthDaemon"/>
+    
+    
+    <!-- 删除生成的无用的图片或者excel等文件 -->
+    <bean id="removeSystemUserlessFilesDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="removeSystemUserlessFilesDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${removeSystemUserlessFiles.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="removeSystemUserlessFilesDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="removeSystemUserlessFilesDaemon" />
+        </property>
+    </bean>   
+    <bean id="removeSystemUserlessFilesDaemon" class="com.kejin.extract.time.task.daemon.RemoveSystemUserlessFilesDaemon"/>
+    
+    
+    <!-- 同步钉钉通讯录 -->
+    <bean id="syncDingDingAddressListDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="syncDingDingAddressListDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncDingDingAddressList.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="syncDingDingAddressListDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="syncDingDingAddressListDaemon" />
+        </property>
+    </bean>   
+    <bean id="syncDingDingAddressListDaemon" class="com.kejin.extract.time.task.daemon.SyncDingDingAddressListDaemon"/>
+</beans>

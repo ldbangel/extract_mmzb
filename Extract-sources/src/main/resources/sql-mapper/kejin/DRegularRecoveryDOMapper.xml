@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DRegularRecoveryDao">
+    
+  <sql id="Base_Column_List" >        
+		recoveryOrderDetailNo,
+		memberId,
+		amount,
+		principal,
+		interest,
+		repayTerm,
+		totalTerm,
+		subjectNo,
+		loanTerm,
+		creatTime,
+		GMT_CREATE,
+		GMT_MODIFIED
+		
+  </sql>
+  
+ <select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DRegularRecoveryModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_regular_recovery
+       where 1=1 
+       <if test="recoveryOrderDetailNos != null and recoveryOrderDetailNos.size() > 0" >
+          AND recoveryOrderDetailNo in 
+          <foreach collection="recoveryOrderDetailNos" item="recoveryOrderDetailNo" open="(" separator="," close=")">
+		  	#{recoveryOrderDetailNo}
+          </foreach> 
+       </if>  
+  </select>
+  
+  <select id="selectNotInReinvestAndNew" resultType="com.kejin.extract.entity.kejinTest.DRegularRecoveryModel">
+  	 select 
+     	<include refid="Base_Column_List" />
+     from 
+     	d_regular_recovery
+     WHERE
+		recoveryOrderDetailNo NOT IN (
+			SELECT
+				orderNo
+			FROM
+				d_reinvest_and_new
+		)
+  </select>
+
+	<select id="selectByRangeTime" resultType="com.kejin.extract.entity.kejinTest.DRegularRecoveryModel">
+		select
+			<include refid="Base_Column_List" />
+		from
+			d_regular_recovery
+		where 1=1
+		<if test="startDate!=null">
+			<![CDATA[ AND creatTime >= #{startDate} ]]>
+		</if>
+		<if test="endDate!=null">
+			<![CDATA[ AND creatTime < #{endDate} ]]>
+		</if>
+	</select>
+
+
+	<insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DRegularRecoveryModel" >
+	    INSERT INTO `d_regular_recovery` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{recoveryOrderDetailNo,jdbcType=VARCHAR},
+			#{memberId,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{principal,jdbcType=DECIMAL},
+			#{interest,jdbcType=DECIMAL},
+			#{repayTerm,jdbcType=VARCHAR},
+			#{totalTerm,jdbcType=VARCHAR},
+			#{subjectNo,jdbcType=VARCHAR},
+			#{loanTerm,jdbcType=VARCHAR},
+			#{creatTime,jdbcType=TIMESTAMP},
+		    now(),
+		    now()
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DRegularRecoveryModel" >
+  	update `d_regular_recovery`
+	set
+	   <if test="amount!=null">	
+	   	    amount=#{amount,jdbcType=DECIMAL},
+	   </if>
+	   <if test="principal!=null">	
+			principal=#{principal,jdbcType=DECIMAL},
+	   </if>
+	   <if test="interest!=null">	
+			interest=#{interest,jdbcType=DECIMAL},
+	   </if>
+	   <if test="repayTerm!=null">	
+			repayTerm=#{repayTerm,jdbcType=VARCHAR},
+       </if>
+	   <if test="totalTerm!=null">	
+			totalTerm=#{totalTerm,jdbcType=VARCHAR},
+	   </if>
+	   <if test="subjectNo!=null">	
+			subjectNo=#{subjectNo,jdbcType=VARCHAR},
+	   </if>
+	   <if test="loanTerm!=null">	
+			loanTerm=#{loanTerm,jdbcType=VARCHAR},
+	   </if>
+	   <if test="creatTime!=null">	
+			creatTime =#{creatTime,jdbcType=TIMESTAMP},
+	    </if>
+     	GMT_MODIFIED = now()
+	    WHERE recoveryOrderDetailNo = #{recoveryOrderDetailNo,jdbcType=VARCHAR}
+	
+  </update> 	
+	
+</mapper>

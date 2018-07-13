@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DProductDao">
+    
+  <sql id="Base_Column_List" >
+        memberId,
+		name,
+		companyName,
+		phone,
+		mail,
+		loanProjectNo,
+		projectNo,
+		projectName_loan,
+		projectName_invest,
+		rate,
+		loanTerm,
+		repayType,
+		applyAmount,
+		biddedAmount,
+		bidableAmount,
+		status,
+		lineDatetime,
+        carryInterestDatetime,		
+		GMT_CREATE,
+		GMT_MODIFIED,
+		project_manager_a,
+		project_manager_b
+  </sql>
+  
+ <select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DProductModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_product
+       where 1=1 
+      <if test="loanProjectNo != null " >
+          and loanProjectNo = #{loanProjectNo,jdbcType=VARCHAR}
+      </if>  
+      <if test="projectNo != null " >
+          and projectNo = #{projectNo,jdbcType=VARCHAR}
+      </if>  
+  </select>
+  
+  
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DProductModel" >  
+	    INSERT INTO `d_product` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		   	#{memberId,jdbcType=VARCHAR},
+			#{name,jdbcType=VARCHAR},
+			#{companyName,jdbcType=VARCHAR},
+			#{phone,jdbcType=VARCHAR},
+			#{mail,jdbcType=VARCHAR},
+			#{loanProjectNo,jdbcType=VARCHAR},
+			#{projectNo,jdbcType=VARCHAR},
+			#{projectName_loan,jdbcType=VARCHAR},
+			#{projectName_invest,jdbcType=VARCHAR},
+			#{rate,jdbcType=DECIMAL},
+			#{loanTerm,jdbcType=VARCHAR},
+			#{repayType,jdbcType=VARCHAR},
+			#{applyAmount,jdbcType=DECIMAL},
+			#{biddedAmount,jdbcType=DECIMAL},
+			#{bidableAmount,jdbcType=DECIMAL},
+			#{status,jdbcType=VARCHAR},  
+			#{lineDatetime,jdbcType=TIMESTAMP},
+			#{carryInterestDatetime,jdbcType=TIMESTAMP}, 		    
+		    now(),
+		    now(),
+		    #{projectManagerA,jdbcType=VARCHAR}, 
+		    #{projectManagerA,jdbcType=VARCHAR}
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DProductModel" >
+		update `d_product`
+		set
+			<if test="memberId!=null">
+	            memberId = 	#{memberId,jdbcType=VARCHAR},
+	        </if> 
+	        <if test="name!=null">   
+				name= #{name,jdbcType=VARCHAR},
+			</if> 
+	        <if test="companyName">   
+				companyName=#{companyName,jdbcType=VARCHAR},
+			</if> 
+	        <if test="phone!=null">   
+				phone=#{phone,jdbcType=VARCHAR},
+			</if> 
+	        <if test="mail!=null">   
+				mail=#{mail,jdbcType=VARCHAR},
+			</if> 
+	        <if test="loanProjectNo!=null">   
+				loanProjectNo=#{loanProjectNo,jdbcType=VARCHAR},
+			</if> 
+	        <if test="projectNo!=null">   
+				projectNo=#{projectNo,jdbcType=VARCHAR},
+			</if> 
+	        <if test="projectName_loan!=null">   
+				projectName_loan=#{projectName_loan,jdbcType=VARCHAR},
+			</if> 
+	        <if test="projectName_invest!=null">   
+				projectName_invest=#{projectName_invest,jdbcType=VARCHAR},
+			</if> 
+	        <if test="rate!=null">   
+				rate=#{rate,jdbcType=DECIMAL},
+			</if> 
+	        <if test="loanTerm!=null">   
+				loanTerm=#{loanTerm,jdbcType=VARCHAR},
+			</if> 
+	        <if test="repayType!=null">   
+				repayType=#{repayType,jdbcType=VARCHAR},
+			</if> 
+	        <if test="applyAmount!=null">   
+				applyAmount=#{applyAmount,jdbcType=DECIMAL},
+			</if> 
+	        <if test="biddedAmount!=null">   
+				biddedAmount=#{biddedAmount,jdbcType=DECIMAL},
+			</if> 
+	        <if test="bidableAmount!=null">   
+				bidableAmount=#{bidableAmount,jdbcType=DECIMAL},
+			</if> 
+	        <if test="status!=null">   
+				status=#{status,jdbcType=VARCHAR},  
+			</if> 
+	        <if test="lineDatetime!=null">   
+				lineDatetime=#{lineDatetime,jdbcType=TIMESTAMP},
+			</if> 
+	        <if test="carryInterestDatetime!=null">   
+		        carryInterestDatetime=#{carryInterestDatetime,jdbcType=TIMESTAMP}, 
+		    </if> 
+		    <if test="projectManagerA!=null">   
+				project_manager_a=#{projectManagerA,jdbcType=VARCHAR},  
+			</if> 
+			<if test="projectManagerB!=null">   
+				project_manager_b=#{projectManagerB,jdbcType=VARCHAR},  
+			</if> 
+	     	GMT_MODIFIED = now()
+		    WHERE loanProjectNo = #{loanProjectNo,jdbcType=VARCHAR}    
+            and projectNo = #{projectNo,jdbcType=VARCHAR}
+  </update> 	
+	
+</mapper>

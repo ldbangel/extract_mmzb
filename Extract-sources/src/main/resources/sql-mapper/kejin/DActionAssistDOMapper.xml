@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DActionAssistDao">
+    
+  <sql id="Base_Column_List" >
+     recordBeginDatetime,recordEndDatetime,intervalTime,handleData,beginDatetime,endDatetime,output,reason
+  </sql>
+  
+  <select id="select" parameterType="Map"  resultType="com.kejin.extract.entity.kejinTest.DActionAssistModel">
+     select * from d_action_assist
+      where 
+        <if test="handleData!=null">
+			handleData = #{handleData,jdbcType=VARCHAR} and
+		</if>
+		<if test="output!=null">
+			output = #{output,jdbcType=VARCHAR} and
+		</if>	
+		1=1 order by recordEndDatetime desc
+      limit 10 ;
+  </select>
+  
+  <select id="selectOutputFail" parameterType="Map"  resultType="com.kejin.extract.entity.kejinTest.DActionAssistModel">
+    select * from d_action_assist
+    where ((output = 'fail') or (output is null)) and beginDatetime >= #{beginTime } ;
+  </select>
+    
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DActionAssistModel" useGeneratedKeys="true" keyProperty="id" >  
+	    INSERT INTO `d_action_assist` (
+		   <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    		    
+		    #{recordBeginDatetime,jdbcType=TIMESTAMP},
+		    #{recordEndDatetime,jdbcType=TIMESTAMP},
+		    #{intervalTime,jdbcType=VARCHAR},
+		    #{handleData,jdbcType=VARCHAR},
+		    #{beginDatetime,jdbcType=TIMESTAMP},
+		    #{endDatetime,jdbcType=TIMESTAMP},
+		    #{output,jdbcType=VARCHAR},
+		    #{reason,jdbcType=VARCHAR}
+		   
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DActionAssistModel" >
+  	update `d_action_assist`
+	  <set>
+		<if test="recordBeginDatetime!=null">
+			recordBeginDatetime = #{recordBeginDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="recordEndDatetime!=null">
+			recordEndDatetime = #{recordEndDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="intervalTime!=null">
+			intervalTime = #{intervalTime,jdbcType=VARCHAR},
+		</if>
+		<if test="beginDatetime!=null">
+			beginDatetime = #{beginDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="endDatetime!=null">
+			endDatetime = #{endDatetime,jdbcType=TIMESTAMP},
+		</if>
+		<if test="output!=null">
+			output = #{output,jdbcType=VARCHAR},
+		</if>
+		<if test="reason!=null">
+			reason = #{reason,jdbcType=VARCHAR},
+		</if>
+	  </set>		
+	  WHERE id = #{id,jdbcType=VARCHAR}	
+  </update> 	
+	
+ 
+  
+  
+	
+	
+</mapper>

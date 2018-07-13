@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DEmployeeDao">
+    
+  	<sql id="Base_Column_List" >        
+		memberId,
+		name,
+		phone,
+		f_code fCode,
+		zone,
+		description,
+		department,
+		duty,
+		status,
+		personType   
+ 	</sql>
+  
+ 	<select id="select" resultType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+       select 
+       	<include refid="Base_Column_List" /> 
+       from 
+       	d_employee 
+       where `status` = 1 and personType = '业务人员' 
+  	</select>
+  	
+  	<select id="selectActiveUser" resultType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+       select 
+       	memberId,
+       	name,
+       	phone
+       from 
+       	d_employee 
+       where `status` = 1; 
+  	</select>
+  	
+  	<insert id="insertEmployee" parameterType="java.util.List">
+  		INSERT INTO d_employee (
+			memberId,
+			`name`,
+			phone,
+			f_code,
+			zone,
+			description,
+			department,
+			duty,
+			`status`,
+			personType,
+			createTime,
+			modifiedTime
+		)
+		VALUES
+		<foreach collection="list" item="model"  separator="," >
+			(
+				#{model.memberId, jdbcType=VARCHAR},
+			  	#{model.name, jdbcType=VARCHAR},
+				#{model.phone, jdbcType=VARCHAR},
+				#{model.fCode, jdbcType=VARCHAR},
+				#{model.zone, jdbcType=INTEGER},
+				'',
+				'',
+				#{model.duty, jdbcType=VARCHAR},
+				1,
+				#{model.personType, jdbcType=VARCHAR},
+			    now(),
+			    now()
+			)
+		</foreach>
+  	</insert>
+  	
+  	<update id="updateStatus" parameterType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+  		<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
+  			UPDATE 
+  				d_employee 
+  			SET 
+  				`status` = 0 , 
+  				modifiedTime = now() 
+  			WHERE 
+  				memberId = #{model.memberId, jdbcType=VARCHAR}
+		</foreach>
+  	</update>
+  
+</mapper>

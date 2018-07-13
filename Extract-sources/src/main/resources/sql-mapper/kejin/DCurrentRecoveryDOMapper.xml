@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DCurrentRecoveryDao">
+    
+  <sql id="Base_Column_List" >
+  		recoveryOrderDetailNo,
+		memberId,
+		name,
+		phone,
+		amount,
+		createDate,
+		credit,
+		rewardRate,
+		GMT_CREATE,
+		GMT_MODIFIED
+
+  </sql>
+  
+ <select id="select" parameterType="Map" resultType="com.kejin.extract.entity.kejinTest.DCurrentRecoveryModel">
+       select 
+           <include refid="Base_Column_List" />
+       from d_current_recovery
+       where 1=1 
+        <if test="recoveryOrderDetailNos != null and recoveryOrderDetailNos.size() > 0" >
+          AND recoveryOrderDetailNo in 
+            <foreach collection="recoveryOrderDetailNos" item="recoveryOrderDetailNo" open="(" separator="," close=")">
+			   #{recoveryOrderDetailNo}
+            </foreach> 
+       </if>  
+  </select>
+
+	<select id="selectByRangeTime" resultType="com.kejin.extract.entity.kejinTest.DCurrentRecoveryModel">
+		select
+		<include refid="Base_Column_List" />
+		from d_current_recovery
+		where createDate>#{startDate} AND  createDate&lt;=#{endDate}
+	</select>
+
+
+	<insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DCurrentRecoveryModel" >
+	    INSERT INTO `d_current_recovery` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{recoveryOrderDetailNo,jdbcType=VARCHAR},
+			#{memberId,jdbcType=VARCHAR},
+			#{name,jdbcType=VARCHAR},
+			#{phone,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{createDate,jdbcType=TIMESTAMP},
+			#{credit,jdbcType=DECIMAL},
+			#{rewardRate,jdbcType=DECIMAL},
+		    now(),
+		    now()
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DCurrentRecoveryModel" >
+  	update `d_current_recovery`
+	set
+	    <if test="recoveryOrderDetailNo!=null">	
+	        recoveryOrderDetailNo = #{recoveryOrderDetailNo,jdbcType=VARCHAR},
+	    </if>
+	    <if test="memberId!=null">	
+			memberId = #{memberId,jdbcType=VARCHAR},
+		</if>
+	    <if test="name!=null">	
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+	    <if test="phone!=null">	
+			phone = #{phone,jdbcType=VARCHAR},
+		</if>
+		<if test="amount!=null">	
+			amount = #{amount,jdbcType=DECIMAL},
+		</if>
+		<if test="createDate!=null">	
+			createDate = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="credit!=null">	
+			credit = #{credit,jdbcType=DECIMAL},
+		</if>
+		<if test="rewardRate!=null">	
+			rewardRate = #{rewardRate,jdbcType=DECIMAL},
+		</if>
+	    
+     	GMT_MODIFIED = now()
+	    WHERE recoveryOrderDetailNo = #{recoveryOrderDetailNo,jdbcType=VARCHAR}
+	
+  </update> 	
+	
+</mapper>

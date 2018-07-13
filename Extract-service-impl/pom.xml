@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.kejin.Extract</groupId>
+    <artifactId>Extract</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>Extract-service-impl</artifactId>
+  <name>Extract-service-impl</name>
+  <url>http://maven.apache.org</url>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <dependencies>
+  	<!-- self -->
+  	<dependency>
+		<groupId>com.kejin.Extract</groupId>
+		<artifactId>Extract-core</artifactId>
+	</dependency>
+    <dependency>
+		<groupId>com.kejin.Extract</groupId>
+		<artifactId>Extract-sources</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.kejin.Extract</groupId>
+		<artifactId>Extract-service</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.kejin.Extract</groupId>
+		<artifactId>Extract-integration</artifactId>
+	</dependency>
+	
+  	<!-- spring -->
+  	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-core</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context-support</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-beans</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-tx</artifactId>
+	</dependency>
+	
+	<dependency>
+	    <groupId>commons-io</groupId>
+	    <artifactId>commons-io</artifactId>
+	    <version>2.4</version>
+	</dependency>
+		
+	<!-- freemarker -->
+	<dependency>
+	    <groupId>org.freemarker</groupId>
+	    <artifactId>freemarker</artifactId>
+	    <version>2.3.23</version>
+	</dependency>
+	
+	<!-- java mail -->
+	<dependency>
+	    <groupId>com.sun.mail</groupId>
+	    <artifactId>javax.mail</artifactId>
+	    <version>1.5.6</version>
+	</dependency>
+	
+	<!-- excel -->
+	<dependency>
+	    <groupId>org.apache.poi</groupId>
+	    <artifactId>poi</artifactId>
+	    <version>3.9</version>
+	</dependency>
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>3.9</version>
+    </dependency>
+    
+    <!-- pdf -->
+    <dependency>
+		<groupId>com.itextpdf</groupId>
+		<artifactId>itextpdf</artifactId>
+	</dependency>	
+		
+	<!-- test -->
+	<dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <scope>test</scope>
+	</dependency>
+	
+	<!-- json -->
+	<dependency>
+		<groupId>com.alibaba</groupId>
+		<artifactId>fastjson</artifactId>
+	</dependency>
+	
+	<!-- log -->
+	<dependency>
+	    <groupId>log4j</groupId>
+	    <artifactId>log4j</artifactId>
+	</dependency>
+	
+	<!-- spring security -->
+	<dependency>
+	    <groupId>org.springframework.security</groupId>
+	    <artifactId>spring-security-core</artifactId>
+	</dependency>
+	<dependency>
+	    <groupId>org.springframework.security</groupId>
+	    <artifactId>spring-security-config</artifactId>
+	</dependency>
+	
+	<dependency>
+    	<groupId>taobao-sdk-java-auto</groupId>
+    	<artifactId>taobao-sdk-java-auto</artifactId>
+    	<version>1.0</version>
+    </dependency>
+  </dependencies>
+</project>

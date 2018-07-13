@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.OperationInfoDao">
+    
+ <select id="getIncreasedInfo"  resultType="com.kejin.extract.entity.service.IncreasedInfoModel"> 
+ 	SELECT
+		*
+	FROM
+		(
+			SELECT
+				count(1) AS registerNum,
+				Date(u.registerDatetime) AS registerDate
+			FROM
+				d_user u
+			WHERE
+				1 = 1
+			<if test="beginTime!=null">
+				<![CDATA[ AND u.registerDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">	
+				<![CDATA[ AND u.registerDatetime < #{endTime} ]]>
+			</if>
+		) a,
+		(
+			SELECT
+				count(1) AS tieCardNum,
+				Date(u.tieCarDatetime) AS tieCardDate
+			FROM
+				d_user u
+			WHERE
+				1 = 1
+			<if test="beginTime!=null">
+				<![CDATA[ AND u.tieCarDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">	
+				<![CDATA[ AND u.tieCarDatetime < #{endTime} ]]>
+			</if>
+		) c,
+		(
+			SELECT
+				count(1) AS firstInvestNum,
+				Date(u.firstInvestDatetime) AS firstInvestDate
+			FROM
+				d_user u
+			WHERE
+				1 = 1
+			<if test="beginTime!=null">
+				<![CDATA[ AND u.firstInvestDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">	
+				<![CDATA[ AND u.firstInvestDatetime < #{endTime} ]]>
+			</if>
+		) d  
+ </select>
+ 
+ <select id="getFundFlowInfo"  resultType="com.kejin.extract.entity.service.FundFlowInfoModel">     
+ 	SELECT
+		chargeAmount,
+		cashAmount,
+		chargeAmount - cashAmount AS inflow,
+		chargeNum,
+		cashNum
+	FROM
+		(
+			SELECT
+				IFNULL(sum(c.amount), 0) AS chargeAmount,
+				IFNULL(count(c.memberId), 0) AS chargeNum
+			FROM
+				d_charge c
+			WHERE
+				1 = 1
+			AND user_role = 'INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND c.payDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND c.payDate < #{endTime} ]]>
+			</if>
+		) a,
+		(
+			SELECT
+				IFNULL(SUM(c.amount), 0) AS cashAmount,
+				IFNULL(count(c.memberId), 0) AS cashNum
+			FROM
+				d_cash c
+			WHERE
+				1 = 1
+			AND c.payStatus IN ('CONFIRMING', 'ACCEPT', 'REMITING', 'SUCCESS')
+			AND c.user_role='INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND c.orderTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND c.orderTime < #{endTime} ]]>
+			</if>
+		) b;
+ </select>
+ 
+ <select id="getTradeInfo" resultType="com.kejin.extract.entity.service.TradeInfoModel">
+ 	SELECT
+		*
+	FROM
+		(
+			SELECT
+				IFNULL(sum(i.amount), 0) AS investRegularAmount,
+				IFNULL(count(i.amount), 0) AS investRegularNum
+			FROM
+				d_regular_invest i
+			WHERE
+				1 = 1
+			AND i.operationStatus IN (
+				'PAY_SUCCESS',
+				'BID_SUCCESS'
+			)
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) a,
+		(
+			SELECT
+				IFNULL(SUM(r.amount), 0) AS transferRegularAmount,
+				IFNULL(count(r.amount), 0) AS transferRegularNum
+			FROM
+				d_regular_recovery r
+			WHERE
+				1 = 1
+			<if test="beginTime!=null">
+				<![CDATA[ AND r.creatTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND r.creatTime < #{endTime} ]]>
+			</if>
+		) b;
+ </select>
+ 
+ <select id="getInvestInfo" resultType="com.kejin.extract.entity.service.InvestInfoModel">
+  	SELECT
+		*, sum(
+			oneMonthAmount + twoMonthAmount + threeMonthAmount + sixMonthAmount + twelveMonthAmount + othersAmount
+		) AS allAmount,
+		sum(
+			oneMonthNum + twoMonthNum + threeMonthNum + sixMonthNum + twelveMonthNum + othersNum
+		) AS allNum
+	FROM
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS oneMonthAmount,
+				IFNULL(count(amount), 0) AS oneMonthNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife = '1月'
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) b,
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS twoMonthAmount,
+				IFNULL(count(amount), 0) AS twoMonthNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife IN ('2月', '60日')
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) c,
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS threeMonthAmount,
+				IFNULL(count(amount), 0) AS threeMonthNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife = '3月'
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) d,
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS sixMonthAmount,
+				IFNULL(count(amount), 0) AS sixMonthNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife = '6月'
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) e,
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS twelveMonthAmount,
+				IFNULL(count(amount), 0) AS twelveMonthNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife = '12月'
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) h,
+		(
+			SELECT
+				IFNULL(SUM(amount), 0) AS othersAmount,
+				IFNULL(count(amount), 0) AS othersNum
+			FROM
+				d_regular_invest i
+			WHERE
+				subjectType != '1'
+			AND subjectLife NOT IN (
+				'1月',
+				'2月',
+				'60日',
+				'3月',
+				'6月',
+				'12月'
+			)
+			<if test="beginTime!=null">
+				<![CDATA[ AND i.operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND i.operationDate < #{endTime} ]]>
+			</if>
+		) f;
+ </select>
+ 
+ <select id="getSimpleReportInfo" resultType="java.util.Map">
+ 	SELECT
+	(
+		SELECT
+			sum(t1.amount)
+		FROM
+			kejinTest.d_regular_invest t1
+		WHERE
+			t1.operationStatus IN (
+				'pay_success',
+				'bid_success'
+			)
+		<if test="endTime!=null">
+			<![CDATA[ AND t1.operationDate < #{endTime} ]]>
+		</if>
+	) - (
+		SELECT
+			sum(t2.principal)
+		FROM
+			kejinTest.d_regular_recovery t2
+		WHERE 1=1
+		<if test="endTime!=null">
+			<![CDATA[ AND t2.creatTime < #{endTime} ]]>
+		</if>
+	) regularLoanBalance,
+	(
+		(
+			(
+				SELECT
+					sum(t1.amount)
+				FROM
+					kejinTest.d_regular_invest t1
+				WHERE
+					t1.operationStatus IN (
+						'pay_success',
+						'bid_success'
+					)
+				<if test="endTime!=null">
+					<![CDATA[ AND t1.operationDate < #{endTime} ]]>
+				</if>
+			) - (
+				SELECT
+					sum(t2.principal)
+				FROM
+					kejinTest.d_regular_recovery t2
+				WHERE 1=1
+				<if test="endTime!=null">
+					<![CDATA[ AND t2.creatTime < #{endTime} ]]>
+				</if>
+			)
+		) - (
+			(
+				SELECT
+					sum(t1.amount)
+				FROM
+					kejinTest.d_regular_invest t1
+				WHERE
+					t1.operationStatus IN (
+						'pay_success',
+						'bid_success'
+					)
+				<if test="beginTime!=null">
+					<![CDATA[ AND t1.operationDate < #{beginTime} ]]>
+				</if>
+			) - (
+				SELECT
+					sum(t2.principal)
+				FROM
+					kejinTest.d_regular_recovery t2
+				WHERE 1=1
+				<if test="beginTime!=null">
+					<![CDATA[ AND t2.creatTime < #{beginTime} ]]>
+				</if>
+			)
+		)
+	) regularDailyGrowth,
+	(
+		(
+			(
+				SELECT
+					sum(t1.amount)
+				FROM
+					kejinTest.d_regular_invest t1
+				WHERE
+					t1.operationStatus IN (
+						'pay_success',
+						'bid_success'
+					)
+				<if test="endTime!=null">
+					<![CDATA[ AND t1.operationDate < #{endTime} ]]>
+				</if>
+			) - (
+				SELECT
+					sum(t2.principal)
+				FROM
+					kejinTest.d_regular_recovery t2
+				WHERE 1=1
+				<if test="endTime!=null">
+					<![CDATA[ AND t2.creatTime < #{endTime} ]]>
+				</if>
+			)
+		) / (
+			SELECT
+				(
+					SELECT
+						sum(t1.amount)
+					FROM
+						kejinTest.d_regular_invest t1
+					WHERE
+						t1.operationStatus IN (
+							'pay_success',
+							'bid_success'
+						)
+					<if test="beginTime!=null">
+						<![CDATA[ AND t1.operationDate < #{beginTime} ]]>
+					</if>
+				) - (
+					SELECT
+						sum(t2.principal)
+					FROM
+						kejinTest.d_regular_recovery t2
+					WHERE 1=1
+					<if test="beginTime!=null">
+						<![CDATA[ AND t2.creatTime < #{beginTime} ]]>
+					</if>
+				)
+		) - 1
+	) regularDailyRail,
+	(
+		SELECT
+			sum(t3.amount)
+		FROM
+			kejinTest.d_reinvest_and_new t3
+		WHERE t3.transactionType = 1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t3.operationDate >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t3.operationDate < #{endTime} ]]>
+		</if>	
+	) regularInvestAmount,
+	(
+		SELECT
+			sum(t3.newAmount)
+		FROM
+			kejinTest.d_reinvest_and_new t3
+		WHERE t3.transactionType = 1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t3.operationDate >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t3.operationDate < #{endTime} ]]>
+		</if>
+	) regularNewAmount,
+	(
+		SELECT
+			sum(t3.reinvestAmount)
+		FROM
+			kejinTest.d_reinvest_and_new t3
+		WHERE t3.transactionType = 1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t3.operationDate >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t3.operationDate < #{endTime} ]]>
+		</if>
+	) regularReinvestAmount,
+	(
+		SELECT
+			sum(t4.amount)
+		FROM
+			kejinTest.d_regular_invest t4
+		WHERE 1=1 AND operationStatus in ('BID_SUCCESS','PAY_SUCCESS')
+		<if test="monthBeginTime != null">
+			<![CDATA[ AND t4.operationDate >= #{monthBeginTime} ]]>
+		</if>
+		<if test="monthEndTime != null">
+			<![CDATA[ AND t4.operationDate < #{monthEndTime} ]]>
+		</if>
+	) regularMonthAmount,
+	(
+		SELECT
+			COUNT(DISTINCT t5.memberId)
+		FROM
+			kejinTest.d_user t5
+		WHERE 1=1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t5.registerDatetime >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t5.registerDatetime < #{endTime} ]]>
+		</if>
+		AND (
+			1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND t5.firstInvestDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND t5.firstInvestDatetime < #{endTime} ]]>
+			</if>
+		)
+	) convertOfInvestNum,
+	(
+		SELECT
+			COUNT(DISTINCT t5.memberId)
+		FROM
+			kejinTest.d_user t5
+		WHERE 1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND t5.registerDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND t5.registerDatetime < #{endTime} ]]>
+			</if>
+	) newRegistNum,
+	(
+		SELECT
+			count(0)
+		FROM
+			d_reinvest_and_new
+		WHERE
+			transactionType IN ('1', '3')
+		AND recoveryTotal is NULL
+		AND reinvestAmount is NULL
+		<if test="beginTime!=null">
+		 <![CDATA[ AND operationDate >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+		 <![CDATA[ AND operationDate < #{endTime} ]]>
+		</if>
+	) newInvestNum,
+	(
+		SELECT
+			IFNULL(SUM(t7.amount),0)
+		FROM
+			kejinTest.d_charge t7
+		WHERE 1=1 
+			AND user_role = 'INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND t7.payDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND t7.payDate < #{endTime} ]]>
+			</if>
+	) chargeAmount,
+	(
+		SELECT
+			IFNULL(SUM(t8.amount),0)
+		FROM
+			kejinTest.d_cash t8
+		WHERE t8.payStatus IN ('CONFIRMING', 'ACCEPT', 'REMITING', 'SUCCESS')
+			AND user_role = 'INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND t8.orderTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND t8.orderTime < #{endTime} ]]>
+			</if>
+	) cashAmount,
+	(
+		SELECT
+			IFNULL(SUM(t9.amount),0)
+		FROM
+			kejinTest.d_regular_recovery t9
+		WHERE 1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND t9.creatTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND t9.creatTime < #{endTime} ]]>
+			</if>
+	) recoveryAmount,
+	(
+		SELECT
+			IFNULL(SUM(t10.amount),0)
+		FROM
+			kejinTest.d_regular_recovery t10
+		WHERE 1=1
+			<if test="monthBeginTime != null">
+				<![CDATA[ AND t10.creatTime >= #{monthBeginTime} ]]>
+			</if>
+			<if test="monthEndTime != null">
+				<![CDATA[ AND t10.creatTime < #{monthEndTime} ]]>
+			</if>
+	) monthRecoveryAmount,
+	(
+		SELECT 
+			count(t12.allAmount)
+		FROM 
+		(
+			SELECT 
+				sum(BALANCE + CREDIT_NUMBERS + BLOCKED_FUND) allAmount
+			FROM
+				kejinTest.d_member_balance t11
+			WHERE 1=1
+				<if test="beginTime!=null">
+					<![CDATA[ AND t11.GMT_CREATE >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND t11.GMT_CREATE < #{endTime} ]]>
+				</if>
+			GROUP BY MEMBER_ID
+		) t12 
+		WHERE t12.allAmount > 1000
+	) activeNum
+ 	
+ </select>
+ 
+ <select id="getInvestNumPlatformInfo" resultType="java.util.Map">
+ 	SELECT
+		CASE 
+			WHEN platform = '' THEN 'Other'
+			ELSE platform
+		END platform,
+		count(0) investNum
+	FROM
+		(
+			SELECT
+				memberId,
+				platform
+			FROM
+				d_regular_invest
+			WHERE 1=1
+				<if test="beginTime!=null">
+					<![CDATA[ AND operationDate >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND operationDate < #{endTime} ]]>
+				</if>
+			GROUP BY
+				memberId
+		) a
+	GROUP BY
+		platform
+ </select>
+ 
+ <select id="getFirstInvestPlatformInfo" resultType="java.util.Map">
+ 	SELECT
+		platform,
+		count(0) newNums,
+		sum(amount) sumAmount
+	FROM
+		(
+			SELECT
+				memberId,
+				amount,
+				platform
+			FROM
+				(
+					SELECT
+						*
+					FROM
+						d_regular_invest
+					WHERE 1=1
+						<if test="beginTime!=null">
+							<![CDATA[ AND operationDate >= #{beginTime} ]]>
+						</if>
+						<if test="endTime!=null">
+							<![CDATA[ AND operationDate < #{endTime} ]]>
+						</if>
+					ORDER BY
+						operationDate
+				) a
+			GROUP BY
+				memberId
+		) a
+	WHERE
+		memberId NOT IN (
+			SELECT
+				memberId
+			FROM
+				d_regular_invest
+			WHERE 1=1
+				<if test="beginTime!=null">
+					<![CDATA[ AND operationDate < #{beginTime} ]]>
+				</if>
+		)
+	GROUP BY
+		platform
+ </select>
+ 
+</mapper>

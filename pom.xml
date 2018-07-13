@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.kejin.Extract</groupId>
+  <artifactId>Extract</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>Extract-core</module>
+    <module>Extract-service</module>
+    <module>Extract-service-impl</module>
+    <module>Extract-sources</module>
+    <module>Extract-web</module>
+    <module>Extract-daemon</module>
+    <module>Extract-integration</module>
+  </modules>
+  
+  <distributionManagement>
+	<repository>
+		<id>deployRelease</id>
+		<url>http://192.168.10.30:9081/content/repositories/releases/</url>
+		<uniqueVersion>true</uniqueVersion>
+	</repository>
+	<snapshotRepository>
+		<id>deploySnapshot</id>
+		<url>http://192.168.10.30:9081/content/repositories/snapshots/</url>
+		<uniqueVersion>true</uniqueVersion>
+	</snapshotRepository>      
+  </distributionManagement>
+  
+  <profiles>
+	<profile>
+		<id>dev</id>
+		<activation>
+			<activeByDefault>true</activeByDefault>
+		</activation>
+		<properties>
+			<web.work.model>normal</web.work.model>
+			
+			<log.file.address>../logs/kejinExtract.log</log.file.address>
+  			<exception.file.address>../logs/kejinExtractError.log</exception.file.address>
+			
+			<!-- <config.root>D:\haoyu\JavaProjects\extract\</config.root> -->
+			<excel_save_path>D:\Bruce\</excel_save_path>
+			<quartz.switch>false</quartz.switch>
+			
+			<!-- screen shot -->
+			<phantomjs_path>D:\phantomjs\bin\phantomjs.exe</phantomjs_path>
+			<script_path>D:\mamaImageHandle\js\</script_path>
+			<target_url>file:///D:/mamaImageHandle/html/</target_url>
+			<image_out_path>D:/mamaImageHandle/image/</image_out_path>
+			<pdf_out_path>D:/mamaImageHandle/pdf/</pdf_out_path>
+			
+			<!-- email send users -->
+			<action_details_users>liudongbo@88mmmoney.com</action_details_users>
+			<achievement_users>liudongbo@88mmmoney.com</achievement_users>
+			<operation_users>liudongbo@88mmmoney.com</operation_users>
+			<member_balance_users>liudongbo@88mmmoney.com</member_balance_users>
+			<account_balance_users>liudongbo@88mmmoney.com</account_balance_users>
+			<customer_distribute_department>liudongbo@88mmmoney.com</customer_distribute_department>
+			<platform_info>liudongbo@88mmmoney.com</platform_info>
+			<platform_realtime_data>liudongbo@88mmmoney.com</platform_realtime_data>
+		</properties>
+	</profile>  
+	<profile>
+		<id>prod</id>
+		<properties>
+			<web.work.model>normal</web.work.model>
+			<config.root>/opt/pay/config/basis/extract/</config.root>
+			<excel_save_path>/opt/files/Excels/</excel_save_path>
+			<quartz.switch>true</quartz.switch>
+			<!-- screen shot -->
+			<phantomjs_path>/opt/phantomjs-2.1.1-linux-x86_64/bin/phantomjs</phantomjs_path>
+			<script_path>/opt/files/mamaImageHandle/js/</script_path>
+			<target_url>/opt/files/mamaImageHandle/html/</target_url>
+			<image_out_path>/opt/files/mamaImageHandle/image/</image_out_path>
+			<pdf_out_path>/opt/files/mamaImageHandle/pdf/</pdf_out_path>
+			<!-- email send users -->
+			<action_details_users>renxiaoyan@88mmmoney.com,weishiwei@88mmmoney.com,renchao@88mmmoney.com,zhangqian@88mmmoney.com,zhouwei@88mmmoney.com,cfgl@88mmmoney.com,liwei@88mmmoney.com</action_details_users>
+			<achievement_users>liwei@88mmmoney.com,weishiwei@88mmmoney.com,cfgl@88mmmoney.com,chenyanru@88mmmoney.com</achievement_users>
+			<operation_users>renxiaoyan@88mmmoney.com,weishiwei@88mmmoney.com,xiaojianbin@88mmmoney.com,jianli@88mmmoney.com,rongqi@88mmmoney.com,liuyuchan@88mmmoney.com,zhangqian@88mmmoney.com,linbaike@88mmmoney.com,liwei@88mmmoney.com</operation_users>
+			<member_balance_users>renxiaoyan@88mmmoney.com</member_balance_users>
+			<account_balance_users>liwei@88mmmoney.com,rongqi@88mmmoney.com,weishiwei@88mmmoney.com,cfgl@88mmmoney.com,yunying@88mmmoney.com</account_balance_users>
+			<customer_distribute_department>zhouwei@88mmmoney.com,zhangbin@88mmmoney.com,weishiwei@88mmmoney.com,chenying@88mmmoney.com</customer_distribute_department>
+			<platform_info>liwei@88mmmoney.com,zhangqian@88mmmoney.com,chenhaipeng@88mmmoney.com</platform_info>
+			<platform_realtime_data>renxiaoyan@88mmmoney.com,liming@88mmmoney.com,xiaojianbin@88mmmoney.com,suwenan@88mmmoney.com,liwei@88mmmoney.com,rongqi@88mmmoney.com,jianli@88mmmoney.com,cfgl@88mmmoney.com</platform_realtime_data>
+		</properties>
+	</profile>     
+  </profiles>
+	
+  <properties>
+	<mybatis.version>3.2.2</mybatis.version>
+	<mysql.jdbc.version>5.1.29</mysql.jdbc.version>
+	<jdk.version>1.6</jdk.version>
+	<maven.test.skip>true</maven.test.skip>
+	<mybatis.spring.version>1.2.0</mybatis.spring.version>
+	<spring.version>4.3.3.RELEASE</spring.version>
+	<slf4j.version>1.7.5</slf4j.version>
+	<logback.version>1.0.13</logback.version>
+	<logback.extensions.version>0.1.1</logback.extensions.version>
+	<junit.version>4.11</junit.version>
+	<kejin.common.version>2.0.0</kejin.common.version>
+	<Extract.version>0.0.1-SNAPSHOT</Extract.version>
+	<restful-framework.version>2.0.0</restful-framework.version>
+	<cxf.version>2.4.3</cxf.version>
+	<quartz-scheduler.version>2.2.1</quartz-scheduler.version>
+	<easymock.version>2.5.2</easymock.version>
+	<fastjson.version>1.2.33</fastjson.version>
+	<velocity.version>1.7</velocity.version>
+	<velocity.tools.version>2.0</velocity.tools.version>
+	<druid.version>1.0.29</druid.version>	
+  </properties>
+  
+  
+  <dependencyManagement>
+  	<dependencies>
+  		<!-- self -->
+        <dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-core</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-sources</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-integration</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-service</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-service-impl</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kejin.Extract</groupId>
+			<artifactId>Extract-daemon</artifactId>
+			<version>${Extract.version}</version>
+		</dependency>
+  		
+  		<!-- spring jar -->
+  		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		
+		<!-- DB jar -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>${mybatis.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.jdbc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring</artifactId>
+			<version>${mybatis.spring.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.alibaba</groupId>
+		    <artifactId>druid</artifactId>
+		    <version>${druid.version}</version>
+		</dependency>
+		<dependency>  
+		    <groupId>com.github.pagehelper</groupId>  
+		    <artifactId>pagehelper</artifactId>  
+		    <version>4.0.0</version>  
+		</dependency> 
+		
+		<!-- spring security -->
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-core</artifactId>
+		    <version>4.2.3.RELEASE</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-web</artifactId>
+		    <version>4.2.3.RELEASE</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-config</artifactId>
+		    <version>4.2.3.RELEASE</version>
+		</dependency>
+		
+		<!-- spring quartz -->
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>${quartz-scheduler.version}</version>
+		</dependency>
+		
+		<!-- json -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+		</dependency>
+		
+		<!-- log -->
+		<!-- <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency> -->
+		<dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		    <version>1.2.17</version>
+		</dependency>
+		
+		<!-- test -->
+		<dependency>
+		    <groupId>junit</groupId>
+		    <artifactId>junit</artifactId>
+		    <version>4.11</version>
+		    <scope>test</scope>
+		</dependency>
+		
+		<!-- pdf -->
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itext-asian</artifactId>
+			<version>5.2.0</version>
+		</dependency>
+		
+		<!-- custody 存管 -->
+		<dependency>
+	        <groupId>com.mmzb.custody</groupId>
+	        <artifactId>custody-service-facade</artifactId>
+	        <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+  	</dependencies>
+  </dependencyManagement>
+  
+  <build>
+  	<finalName>extract</finalName>
+  	<resources>
+		<resource>
+			<directory>src/main/resources</directory>
+			<filtering>true</filtering>
+		</resource>
+	</resources>
+  	<plugins>
+  		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-resources-plugin</artifactId>
+			<configuration>
+				<encoding>UTF-8</encoding>
+			</configuration>
+		</plugin>
+     	<plugin>  
+            <groupId>org.apache.maven.plugins</groupId>  
+            <artifactId>maven-compiler-plugin</artifactId>  
+            <version>2.0.2</version>  
+            <configuration>  
+                <source>1.7</source>  
+                <target>1.7</target>  
+            </configuration>  
+        </plugin>  
+    </plugins>
+  </build>
+  
+</project>

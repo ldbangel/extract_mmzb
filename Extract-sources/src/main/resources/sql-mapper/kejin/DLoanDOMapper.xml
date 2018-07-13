@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DLoanDao">
+    
+  <sql id="Base_Column_List" >        
+	memberId,repay_sched_id,loan_proj_no,unpaid_principle,unpaid_interest,paid_principle,paid_interest,term_num,
+	status,plan_repay_date,actual_repay_date,create_time,repay_time,GMT_CREATE,GMT_MODIFIED	    
+  </sql>
+  
+  <insert id="insert" parameterType="java.util.List" useGeneratedKeys="true">  
+	    INSERT INTO `d_loan` (
+		 	<include refid="Base_Column_List" />
+		)
+		VALUES
+		<foreach collection="list" item="model"  separator="," >
+			(    
+			  	#{model.memberId, jdbcType=VARCHAR},
+			  	#{model.repaySchedId, jdbcType=INTEGER},
+				#{model.loanProjNo, jdbcType=VARCHAR},
+				#{model.unpaidPrincipal, jdbcType=DECIMAL},
+				#{model.unpaidInterest, jdbcType=DECIMAL},
+				#{model.paidPrincipal, jdbcType=DECIMAL},
+				#{model.paidInterest, jdbcType=DECIMAL},
+				#{model.termNum, jdbcType=INTEGER},
+				#{model.status, jdbcType=VARCHAR},
+				#{model.planRepayDate, jdbcType=TIMESTAMP},
+				#{model.actualRepayDate, jdbcType=TIMESTAMP},
+				#{model.createTime, jdbcType=TIMESTAMP},
+				#{model.repayTime, jdbcType=TIMESTAMP},
+			    now(),
+			    now()
+			) 
+		</foreach>	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DLoanModel" >
+ 	<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
+	  	update 
+	  		`d_loan`
+		set
+		<if test="model.unpaidPrincipal != null">
+	    	unpaid_principle = #{model.unpaidPrincipal, jdbcType=DECIMAL},
+	   	</if>
+	   	<if test="model.unpaidInterest != null">
+			unpaid_interest = #{model.unpaidInterest, jdbcType=DECIMAL},
+		</if>
+	   	<if test="model.paidPrincipal != null">
+			paid_principle = #{model.paidPrincipal, jdbcType=DECIMAL},
+		</if>
+		<if test="model.paidInterest != null">
+			paid_interest = #{model.paidInterest, jdbcType=DECIMAL},
+		</if>
+		<if test="model.status != null">
+			status = #{model.status, jdbcType=VARCHAR},
+		</if>
+		<if test="model.planRepayDate != null">
+			plan_repay_date = #{model.planRepayDate, jdbcType=TIMESTAMP},
+		</if>
+		<if test="model.actualRepayDate != null">
+			actual_repay_date = #{model.actualRepayDate, jdbcType=TIMESTAMP},
+		</if>
+		<if test="model.createTime != null">
+			create_time = #{model.createTime, jdbcType=TIMESTAMP},
+		</if>
+		<if test="model.repayTime != null">
+			repay_time = #{model.repayTime, jdbcType=TIMESTAMP},
+		</if>
+	    GMT_MODIFIED = now()
+		WHERE repay_sched_id = #{model.repaySchedId, jdbcType=VARCHAR}
+		AND term_num = #{model.termNum, jdbcType=INTEGER}
+	</foreach>
+  </update> 
+  
+</mapper>

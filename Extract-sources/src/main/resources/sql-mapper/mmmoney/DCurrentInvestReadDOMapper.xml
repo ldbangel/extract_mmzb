@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DCurrentInvestReaderDao">
+  
+    <select id="readFromBidOrder"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+     	SELECT
+     		a.BID_ORDER_NO,
+			a.MEMBER_ID ,
+			b.SUBJECT_NO ,
+			b.SUBJECT_NAME ,
+			b.LOAN_TERM ,
+			a.SUBJECT_TYPE,
+			b.REWARD_RATE ,
+			b.REPAY_TYPE,
+			a.AMOUNT,
+			IFNULL(a.PAY_FEE,0) fee,
+			a.STATUS,
+			a.CREATE_TIME
+		FROM
+			invest.t_bid_order a
+		INNER JOIN invest.t_invest_subject b ON a.SUBJECT_NO = b.SUBJECT_NO
+		WHERE
+		a.`STATUS` in ('CURRENT_SUCCESS','TRANSFER_SUCCESS')
+		AND a.MODIFIED_TIME >= #{beginTime}
+		and a.MODIFIED_TIME <#{endTime}     
+      ]]> 
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  	
+  
+
+</mapper>

@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.ActionDetailsDao">
+
+  <select id="selectCashDetails" resultType="Map">
+  	SELECT
+		c.memberId,
+		c.`name`,
+		CASE
+		WHEN c.user_role = 'INVESTOR' THEN
+			'投资人'
+		WHEN c.user_role = 'BORROWERS' THEN
+			'融资人'
+		END userRole,
+		sum(c.amount) allAmount,
+		u.recommandFriendCode,
+		c.phone,
+		c.orderTime,
+		u.phoneProvince,
+		u.phoneCity,
+		ch.channel_name channelName,
+		e.feedback
+	FROM
+		(
+			SELECT
+				memberId,
+				`name`,
+				amount,
+				phone,
+				user_role,
+				platform_user_no,
+				orderTime
+			FROM
+				d_cash
+			WHERE
+				payStatus IN (
+					'CONFIRMING',
+					'ACCEPT',
+					'REMITING',
+					'SUCCESS'
+				)
+			AND user_role = 'INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND orderTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND orderTime < #{endTime} ]]>
+			</if>
+			ORDER BY
+				orderTime
+		) c
+	LEFT JOIN d_user u ON c.platform_user_no = u.platform_user_no
+	LEFT JOIN d_channel ch ON ch.f_code = u.recommandFriendCode
+	LEFT JOIN (
+		SELECT
+			*
+		FROM
+			d_cash_revisit
+		WHERE
+			1 = 1
+		<if test="beginTime!=null">
+			<![CDATA[ AND orderTime >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND orderTime < #{endTime} ]]>
+		</if>
+	) e ON c.memberId = e.memberId
+	GROUP BY
+		memberId
+	ORDER BY
+		allAmount DESC
+  </select>	
+	
+  <select id="selectNearestRecoveryDetail" parameterType="java.util.Map" resultType="Map">
+  	SELECT
+		c.memberId memberId,
+		IFNULL(a.amount,0) regularAmount,
+		a.creatTime,
+		IFNULL(b.payAmount,0) creditAmount,
+		b.payDate
+	FROM
+		(
+			SELECT
+				memberId
+			FROM
+				d_regular_invest
+			WHERE
+				memberId = #{memberId}
+			LIMIT 1
+		) c
+	LEFT JOIN (
+			SELECT
+				memberId,
+				amount,
+				creatTime
+			FROM
+				d_regular_recovery
+			WHERE
+				memberId = #{memberId}
+			AND creatTime = (
+				SELECT
+					MAX(t.creatTime)
+				FROM
+					d_regular_recovery t
+				WHERE
+					t.memberId = #{memberId}
+				AND principal > 0
+				<if test="orderTime != null">
+					<![CDATA[ AND t.creatTime < #{orderTime} ]]>
+				</if>
+			)
+		) a ON c.memberId = a.memberId
+	LEFT JOIN (
+		SELECT
+			assignmentId,
+			payAmount,
+			payDate
+		FROM
+			d_credit_assignment
+		WHERE
+			assignmentId = #{memberId}
+		AND payDate = (
+			SELECT
+				MAX(t.payDate)
+			FROM
+				d_credit_assignment t
+			WHERE
+				t.assignmentId = #{memberId}
+			<if test="orderTime != null">
+				<![CDATA[ AND t.payDate < #{orderTime} ]]>
+			</if>
+		)
+	) b ON c.memberId = b.assignmentId
+	limit 1
+  </select>
+
+
+	<select id="selectInvestDetails" resultType="Map">
+		SELECT
+			a.memberId memberId,
+			g.`name`,
+			a.allAmount allAmount,
+			IFNULL(b.regularAmount, 0) regularAmount,
+			IFNULL(d.creditAmount, 0) creditAmount,
+			IFNULL(e.newAmount, 0) newAmount,
+			IFNULL(f.reinvestAmount, 0) reinvestAmount,
+			a.operationDate,
+			g.firstInvestDatetime,
+			g.firstInvestDatetimeOfCurrent,
+			h.channel_name channelName
+		FROM
+			(
+				SELECT
+					memberId,
+					operationDate,
+					IFNULL(sum(amount), 0) allAmount
+				FROM
+					d_reinvest_and_new
+				WHERE
+					transactionType IN ('1', '2', '3')
+				<if test="beginTime!=null">
+					<![CDATA[ AND operationDate >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND operationDate < #{endTime} ]]>
+				</if>
+				GROUP BY
+					memberId
+			) a
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(amount), 0) regularAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType = '1'
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) b ON a.memberId = b.memberId
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(amount), 0) creditAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType = '3'
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) d ON a.memberId = d.memberId
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(newAmount), 0) newAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType IN ('1', '2', '3')
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) e ON a.memberId = e.memberId
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(reinvestAmount), 0) reinvestAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType IN ('1', '2', '3')
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) f ON a.memberId = f.memberId
+		LEFT JOIN d_user g ON a.memberId = g.memberId
+		LEFT JOIN d_channel h ON g.recommandFriendCode = h.f_code
+		WHERE allAmount >= 50000
+		ORDER BY allAmount DESC
+	</select>
+	
+	<select id="selectChargeDetails" resultType="Map">
+		SELECT
+			a.memberId,
+			f.`name`,
+			IFNULL(a.chargeAmount,0) chargeAmount,
+			IFNULL(b.regularAmount,0) regularAmount,
+			IFNULL(d.creditAmount,0) creditAmount,
+			IFNULL(e.BALANCE,0) balance
+		FROM
+			(
+				SELECT
+					memberId,
+					platform_user_no,
+					sum(amount) chargeAmount
+				FROM
+					d_charge
+				WHERE
+					user_role = 'INVESTOR'
+				<if test="beginTime!=null">
+					<![CDATA[ AND GMT_CREATE >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND GMT_CREATE < #{endTime} ]]>
+				</if>
+				GROUP BY
+					memberId
+			) a
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(amount), 0) regularAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType = '1'
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>	
+			GROUP BY
+				memberId
+		) b ON a.memberId = b.memberId
+		LEFT JOIN (
+			SELECT
+				memberId,
+				IFNULL(sum(amount), 0) creditAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType = '3'
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) d ON a.memberId = d.memberId
+		LEFT JOIN (
+			SELECT
+				MEMBER_ID,
+				BALANCE
+			FROM
+				d_member_balance
+			WHERE 1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND SETTLE_DATE = DATE_FORMAT(#{beginTime}, '%Y%m%d') ]]>
+			</if>
+		) e ON a.memberId = e.MEMBER_ID
+		LEFT JOIN d_user f ON a.platform_user_no = f.platform_user_no
+		WHERE a.chargeAmount >= 50000
+	</select>
+	
+	<select id="selectRecoveryDetails" resultType="Map">
+		SELECT
+			a.memberId,
+			e.`name`,
+			e.phone,
+			IFNULL(a.regularRecoveryAmount,0) regularRecoveryAmount,
+			IFNULL(b.reinvestAmount,0) reinvestAmount,
+			IFNULL(c.cashAmount,0) cashAmount,
+			IFNULL(d.BALANCE,0) balance
+		FROM
+			(
+				SELECT
+					memberId,
+					sum(amount) regularRecoveryAmount
+				FROM
+					d_reinvest_and_new
+				WHERE
+					transactionType = '4'
+				<if test="beginTime!=null">
+					<![CDATA[ AND operationDate >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">
+					<![CDATA[ AND operationDate < #{endTime} ]]>
+				</if>
+				GROUP BY
+					memberId
+			) a
+		LEFT JOIN (
+			SELECT
+				memberId,
+				sum(reinvestAmount) reinvestAmount
+			FROM
+				d_reinvest_and_new
+			WHERE
+				transactionType = '1'
+			<if test="beginTime!=null">
+				<![CDATA[ AND operationDate >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND operationDate < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) b ON a.memberId = b.memberId
+		LEFT JOIN (
+			SELECT
+				memberId,
+				sum(amount) cashAmount
+			FROM
+				d_cash
+			WHERE
+				payStatus IN ('CONFIRMING', 'ACCEPT', 'REMITING', 'SUCCESS')
+			AND user_role = 'INVESTOR'
+			<if test="beginTime!=null">
+				<![CDATA[ AND orderTime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+				<![CDATA[ AND orderTime < #{endTime} ]]>
+			</if>
+			GROUP BY
+				memberId
+		) c ON a.memberId = c.memberId
+		LEFT JOIN (
+			SELECT
+				MEMBER_ID,
+				BALANCE
+			FROM
+				d_member_balance
+			WHERE 1=1
+			<if test="beginTime!=null">
+				<![CDATA[ AND SETTLE_DATE = DATE_FORMAT(#{beginTime}, '%Y%m%d') ]]>
+			</if>
+		) d ON a.memberId = d.MEMBER_ID
+		LEFT JOIN d_user e ON a.memberId = e.memberId 
+		WHERE a.regularRecoveryAmount >= 50000
+		ORDER BY a.regularRecoveryAmount DESC
+	</select>
+	
+</mapper>

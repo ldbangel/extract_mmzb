@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DCashReaderDao">
+  
+    <select id="readFromPayment"  resultType="Map">
+      <!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 
+      	SELECT								
+			t1.requestNo,							
+			t1.platformUserNo,							
+			t1.memberid,							
+			t1.amount,							
+			t1.commission fee,							
+			t1.bankcard,							
+			t1.withdrawstatus,							
+			t1.withdrawoperation,							
+			t1.gmt_create,							
+			t1.gmt_modify,							
+			IFNULL(t2.realName, tei.enterpriseName) `name`,							
+			t2.extend1 phone,
+			IFNULL(tcm.userRole, tei.userRole) userRole
+		FROM								
+			custody_shbk.t_withdraw t1							
+		LEFT JOIN custody_shbk.tr_custody_bankinfo t2 ON t1.platformUserNo = t2.platformUserNo
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON t1.platformUserNo = tcm.platformUserNo				
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON t1.platformUserNo = tei.platformUserNo			
+		WHERE								
+			t1.gmt_modify >= #{beginTime}							
+		AND t1.gmt_modify < #{endTime}	
+		AND t2.bindCardFlag = '2'							
+		ORDER BY t1.gmt_create				
+      ]]> 
+     <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+
+  
+
+</mapper>

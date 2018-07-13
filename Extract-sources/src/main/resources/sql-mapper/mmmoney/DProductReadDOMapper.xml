@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DProductReaderDao">
+
+    <select id="readFromInvest"  resultType="Map">
+     <!--  <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+	    SELECT
+			p.SUBMIT_MEMBER_ID,
+			IFNULL(tei.legal, tcm.realName) AUTH_NAME,
+			tei.enterpriseName COMPANY_NAME,
+			i.IDENTITY phone,
+			ii.IDENTITY mail,
+			t.APPLY_NO,
+			t.SUBJECT_NO,
+			p.AGREEMENT_NAME,
+			t.SUBJECT_NAME,
+			t.REWARD_RATE,
+			t.LOAN_TERM,
+			t.REPAY_TYPE,
+			t.APPLY_AMOUNT,
+			t.BIDDED_AMOUNT,
+			t.BIDDABLE_AMOUNT,
+			t.`STATUS`,
+			t.CREATE_TIME,
+			t.INTEREST_DATE,
+			(
+				SELECT
+					a.realName
+				FROM
+					custody_shbk.tr_custody_memberinfo a
+				WHERE
+					a.userRole = 'INVESTOR'
+				AND a.memberId = p.PROJECT_MANAGER_A
+			) projectManagerA,
+			(
+				SELECT
+					a.realName
+				FROM
+					custody_shbk.tr_custody_memberinfo a
+				WHERE
+					a.userRole = 'INVESTOR'
+				AND a.memberId = p.PROJECT_MANAGER_B
+			) projectManagerB
+		FROM
+			invest.t_invest_subject t
+		LEFT JOIN loan.t_ls_project p ON t.APPLY_NO = p.ID
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON tcm.memberId = p.SUBMIT_MEMBER_ID
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON tei.memberId = p.SUBMIT_MEMBER_ID
+		LEFT JOIN member.tm_member_identity i ON i.MEMBER_ID = tcm.memberId
+		AND i.IDENTITY_TYPE = 2
+		LEFT JOIN member.tm_member_identity ii ON ii.MEMBER_ID = tcm.memberId
+		AND i.IDENTITY_TYPE = 1
+		WHERE
+			1 = 1
+		<if test="beginTime!=null">
+			<![CDATA[ AND t.MODIFIED_TIME >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND t.MODIFIED_TIME < #{endTime} ]]>
+		</if>	
+		AND (
+			tcm.userRole = 'BORROWERS'
+			OR tei.userRole = 'BORROWERS'
+		)
+      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+  	</select>
+  
+   
+	
+</mapper>

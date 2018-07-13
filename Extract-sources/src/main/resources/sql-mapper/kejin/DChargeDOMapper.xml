@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DChargeDao">
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DChargeModel">
+    <id column="memberId" property="memberId" jdbcType="VARCHAR"/>
+    <result column="amount" property="amount" jdbcType="DECIMAL" />
+    <result column="request_no" property="requestNo" jdbcType="VARCHAR"/>
+    <result column="platform_user_no" property="platformUserNo" jdbcType="VARCHAR" />
+    <result column="charge_status" property="chargeStatus" jdbcType="VARCHAR" />
+    <result column="user_role" property="userRole" jdbcType="VARCHAR" />
+    <result column="channel" property="channel" jdbcType="VARCHAR"/>
+    <result column="online" property="online"  jdbcType="VARCHAR"/>
+    <result column="payDate" property="payDate" jdbcType="DATE" />
+    <result column="GMT_CREATE" property="GMT_CREATE" jdbcType="DATE" />
+    <result column="GMT_MODIFIED" property="GMT_MODIFIED" jdbcType="DATE" />
+  </resultMap>
+    
+  <sql id="Base_Column_List" >        
+		memberId,
+		amount,
+		request_no,
+		platform_user_no,
+		charge_status,
+		user_role,
+		channel,
+		online,
+		payDate,
+		GMT_CREATE,
+		GMT_MODIFIED     
+  </sql>
+  
+ <select id="select" parameterType="Map" resultMap="BaseResultMap">
+       select 
+           <include refid="Base_Column_List" />
+       from d_charge
+       where 1=1 
+       <if test="requestNos != null and requestNos.size() > 0" >
+          AND request_no in 
+            <foreach collection="requestNos" item="requestNo" open="(" separator="," close=")">
+			   #{requestNo}
+            </foreach> 
+       </if>  
+  </select>
+  
+  
+  <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DChargeModel" >  
+	    INSERT INTO `d_charge` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		   	#{memberId,jdbcType=VARCHAR},
+			#{amount,jdbcType=DECIMAL},
+			#{requestNo,jdbcType=VARCHAR},
+			#{platformUserNo,jdbcType=VARCHAR},
+			#{chargeStatus,jdbcType=VARCHAR},
+			#{userRole,jdbcType=VARCHAR},
+			#{channel,jdbcType=VARCHAR},
+			#{online,jdbcType=VARCHAR},
+			#{payDate,jdbcType=TIMESTAMP},
+		    now(),
+		    now()
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DChargeModel" >
+  	update `d_charge`
+	set
+		<if test="payDate!=null">
+			payDate = #{payDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="online!=null">
+			online = #{online,jdbcType=VARCHAR},
+		</if>
+		<if test="channel!=null">
+			channel = #{channel,jdbcType=VARCHAR},
+		</if>
+		<if test="amount!=null">
+			amount = #{amount,jdbcType=DECIMAL},
+		</if>
+		<if test="userRole!=null">
+			user_role = #{userRole,jdbcType=VARCHAR},
+		</if>	
+		<if test="chargeStatus!=null">
+			charge_status = #{chargeStatus,jdbcType=VARCHAR},
+		</if>
+     	GMT_MODIFIED = now()
+	    WHERE request_no = #{requestNo,jdbcType=VARCHAR}
+  </update> 	
+	
+</mapper>

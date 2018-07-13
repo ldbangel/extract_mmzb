@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DCreditAssignmentDao">
+
+  <resultMap id="BaseResultMap" type="com.kejin.extract.entity.kejinTest.DCreditAssigmentModel">
+    <id column="bidOrderNo" property="bidOrderNo" jdbcType="VARCHAR"/>
+    <result column="assignmentId" property="assignmentId" jdbcType="VARCHAR"/>
+    <result column="assignmentName" property="assignmentName" jdbcType="VARCHAR"/>
+    <result column="transferId" property="transferId" jdbcType="VARCHAR"/>
+    <result column="transferName" property="transferName" jdbcType="VARCHAR"/>
+    <result column="assignAmount" property="assignAmount" jdbcType="DECIMAL"/>
+    <result column="payAmount" property="payAmount" jdbcType="DECIMAL"/>
+    <result column="payCredit" property="payCredit" jdbcType="DECIMAL"/>
+    <result column="payPremium" property="payPremium" jdbcType="DECIMAL"/>
+    <result column="payDate" property="payDate"  jdbcType="TIMESTAMP"/>
+    <result column="subjectNo" property="subjectNo" jdbcType="VARCHAR" />
+    <result column="subjectName" property="subjectName"  jdbcType="VARCHAR"/>
+    <result column="subjectLife" property="subjectLife" jdbcType="VARCHAR" />
+    <result column="rate" property="rate" jdbcType="DECIMAL" />
+    <result column="repayType" property="repayType" jdbcType="VARCHAR" />
+    <result column="assignAllAmount" property="assignAllAmount" jdbcType="DECIMAL" />
+    <result column="minAmount" property="minAmount" jdbcType="DECIMAL" />
+    <result column="discount" property="discount" jdbcType="DECIMAL" />
+    <result column="assignBeginDate" property="assignBeginDate" jdbcType="TIMESTAMP" />
+    <result column="assignEndDate" property="assignEndDate" jdbcType="TIMESTAMP" />
+    <result column="GMT_CREATE" property="GMT_CREATE" jdbcType="TIMESTAMP" />
+    <result column="GMT_MODIFIED" property="GMT_MODIFIED" jdbcType="TIMESTAMP" />
+    <result column="pay_fee" property="payFee" jdbcType="TIMESTAMP" />
+  </resultMap>  
+    
+  <sql id="Base_Column_List" >        
+		bidOrderNo,
+		assignmentId,
+		assignmentName,
+		transferId,
+		transferName,
+		assignAmount,
+		payAmount,
+		payCredit,
+		payPremium,
+		payDate,
+		subjectNo,
+		subjectName,
+		subjectLife,
+		rate,
+		repayType,
+		assignAllAmount,
+		minAmount,
+		discount,
+		assignBeginDate,
+		assignEndDate,
+		GMT_CREATE,
+		GMT_MODIFIED,
+		pay_fee
+  </sql>
+  
+  <select id="select" parameterType="Map" resultMap="BaseResultMap">
+       select 
+           <include refid="Base_Column_List" />
+       from d_credit_assignment
+       where 1=1 
+       <if test="bidOrderNos != null and bidOrderNos.size() > 0" >
+          AND bidOrderNo in 
+            <foreach collection="bidOrderNos" item="bidOrderNo" open="(" separator="," close=")">
+			   #{bidOrderNo}
+            </foreach> 
+       </if>  
+   </select>
+  
+   <select id="selectByRangeTime" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from d_credit_assignment
+		where
+		<![CDATA[ payDate >= #{startDate} AND payDate < #{endDate} ]]>
+   </select>
+
+
+   <insert id="insert" parameterType="com.kejin.extract.entity.kejinTest.DCreditAssigmentModel" >
+	    INSERT INTO `d_credit_assignment` (
+		 <include refid="Base_Column_List" />
+		)
+		VALUES
+		(    
+		    #{bidOrderNo,jdbcType=VARCHAR},
+			#{assignmentId,jdbcType=VARCHAR},
+			#{assignmentName,jdbcType=VARCHAR},
+			#{transferId,jdbcType=VARCHAR},
+			#{transferName,jdbcType=VARCHAR},
+			#{assignAmount,jdbcType=DECIMAL},
+			#{payAmount,jdbcType=DECIMAL},
+			#{payCredit,jdbcType=DECIMAL},
+			#{payPremium,jdbcType=DECIMAL},
+			#{payDate,jdbcType=TIMESTAMP},
+			#{subjectNo,jdbcType=VARCHAR},
+			#{subjectName,jdbcType=VARCHAR},
+			#{subjectLife,jdbcType=VARCHAR},
+			#{rate,jdbcType=DECIMAL},
+			#{repayType,jdbcType=VARCHAR},
+			#{assignAllAmount,jdbcType=DECIMAL},
+			#{minAmount,jdbcType=DECIMAL},
+			#{discount,jdbcType=DECIMAL},
+			#{assignBeginDate,jdbcType=TIMESTAMP},
+			#{assignEndDate,jdbcType=TIMESTAMP},
+		    now(),
+		    now(),
+		    #{payFee,jdbcType=DECIMAL}
+		) ;	  
+  </insert> 
+
+  <update id="update" parameterType="com.kejin.extract.entity.kejinTest.DCreditAssigmentModel" >
+		update `d_credit_assignment`
+			set
+			<if test="bidOrderNo!=null">	
+				bidOrderNo= #{bidOrderNo,jdbcType=VARCHAR},
+			</if>	
+			<if test="assignmentId!=null">	
+				assignmentId=#{assignmentId,jdbcType=VARCHAR},
+			</if>
+			<if test="assignmentName!=null">	
+				assignmentName=	#{assignmentName,jdbcType=VARCHAR},
+			</if>
+			<if test="transferId!=null">
+				transferId=#{transferId,jdbcType=VARCHAR},		
+			</if>
+			<if test="transferName!=null">
+				transferName=	#{transferName,jdbcType=VARCHAR},		
+			</if>
+			<if test="assignAmount!=null">
+				assignAmount=	#{assignAmount,jdbcType=DECIMAL},		
+			</if>
+			<if test="payAmount!=null">
+				payAmount=	#{payAmount,jdbcType=DECIMAL},			
+			</if>
+			<if test="payCredit!=null">
+				payCredit = #{payCredit,jdbcType=DECIMAL},
+			</if>
+		    <if test="payPremium!=null">
+			    payPremium = #{payPremium,jdbcType=DECIMAL},
+			</if>			
+			<if test="payDate!=null">
+				payDate=#{payDate,jdbcType=TIMESTAMP},			
+			</if>
+			<if test="subjectNo!=null">
+				subjectNo=#{subjectNo,jdbcType=VARCHAR},	
+			</if>
+			<if test="subjectName!=null">
+				subjectName=#{subjectName,jdbcType=VARCHAR},		
+			</if>
+			<if test="subjectLife!=null">
+				subjectLife=#{subjectLife,jdbcType=VARCHAR},	
+			</if>
+			<if test="rate!=null">
+				rate=#{rate,jdbcType=DECIMAL},		
+			</if>
+			<if test="repayType!=null">
+				repayType=	#{repayType,jdbcType=VARCHAR},		
+			</if>
+			<if test="assignAllAmount!=null">
+				assignAllAmount=	#{assignAllAmount,jdbcType=DECIMAL},		
+			</if>
+			<if test="minAmount!=null">
+				minAmount=	#{minAmount,jdbcType=DECIMAL},	
+			</if>
+			<if test="discount!=null">
+				discount=#{discount,jdbcType=DECIMAL},
+			</if>
+			<if test="assignBeginDate!=null">
+				assignBeginDate=#{assignBeginDate,jdbcType=TIMESTAMP},
+			</if>
+			<if test="assignEndDate!=null">
+				assignEndDate=#{assignEndDate,jdbcType=TIMESTAMP},	
+			</if>
+			<if test="payFee!=null">
+				pay_fee=#{payFee,jdbcType=DECIMAL},
+			</if>
+     	GMT_MODIFIED = now()
+	    WHERE bidOrderNo = #{bidOrderNo,jdbcType=VARCHAR}
+  </update> 	
+	
+</mapper>

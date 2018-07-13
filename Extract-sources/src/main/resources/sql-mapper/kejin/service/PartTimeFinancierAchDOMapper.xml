@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.PartTimeFinancierAchDao">
+
+  <select id="getPartTimeFinancierAchievementInfo" resultType="java.util.Map">
+  	SELECT
+		a.`name` financier,
+		IFNULL(b.newInvest,0.00) newInvest,
+		IFNULL(b.reInvest,0.00) reInvest,
+		IFNULL(b.allInvest,0.00) allInvest,
+		IFNULL(b.yearInvest,0.00) yearInvest,
+		IFNULL(b.recoveryAmount,0.00) recoveryAmount,
+		IFNULL(b.reInvestRate,0.00) reInvestRate,
+		IFNULL(b.newNums,0) newNums
+	FROM
+		(
+			SELECT
+				memberId,
+				`name`,
+				f_code
+			FROM
+				d_parttime_financier
+			WHERE
+				`status` = 1
+		) a
+	LEFT JOIN (
+		SELECT
+			t1.*, IFNULL(t2.nums, 0) newNums
+		FROM
+			(
+				SELECT
+					(
+						SELECT
+							`name`
+						FROM
+							d_parttime_financier
+						WHERE
+							f_code = t2.f_code
+					) financier,
+					t2.memberId,
+					t2.f_code,
+					sum(ifnull(t.newAmount, 0)) newInvest,
+					sum(ifnull(t.reinvestAmount, 0)) reInvest,
+					sum(t.invest_amount) allInvest,
+					sum(t.invest_amount * t.terms / 12) yearInvest,
+					sum(ifnull(t.recoveryAmount, 0)) recoveryAmount,
+					least(
+						sum(ifnull(t.reinvestAmount, 0)) / SUM(ifnull(t.recoveryAmount, 0)),
+						1
+					) reInvestRate
+				FROM
+					(
+						SELECT
+							a.memberId,
+							a.recoveryAmount,
+							a.newAmount,
+							a.reinvestAmount,
+							a.transactionType,
+							ifnull(a.reinvestAmount, 0) + ifnull(a.newAmount, 0) invest_amount,
+	
+						IF (
+							a.subjectlife LIKE '%月',
+							substring(
+								a.subjectlife,
+								1,
+								LOCATE('月', a.subjectlife) - 1
+							),
+							LEFT (
+								a.subjectlife,
+								LENGTH(a.subjectlife) - 0
+							) / 30
+						) terms
+						FROM
+							kejinTest.d_reinvest_and_new a
+						WHERE
+							a.transactionType IN ('1', '4')
+						<if test="beginTime!=null">
+						  <![CDATA[ AND a.operationDate >= #{beginTime} ]]>
+						</if>
+						<if test="endTime!=null">
+						  <![CDATA[ AND a.operationDate < #{endTime} ]]>
+						</if>
+					) t
+				LEFT JOIN d_user t1 ON t.memberId = t1.memberId
+				LEFT JOIN (
+					SELECT
+						memberId,
+						`name`,
+						f_code
+					FROM
+						d_parttime_financier
+					WHERE
+						`status` = 1
+				) t2 ON t1.recommandFriendCode = t2.f_code
+				WHERE
+					t2.f_code IS NOT NULL
+				GROUP BY
+					t2.f_code
+			) t1
+		LEFT JOIN (
+			SELECT
+				c1.f_code,
+				count(DISTINCT t4.memberId) nums
+			FROM
+				(
+					SELECT
+						*
+					FROM
+						d_user
+					WHERE
+						user_role = 'INVESTOR'
+				) t4
+			LEFT JOIN (
+				SELECT
+					f_code
+				FROM
+					d_parttime_financier
+				WHERE
+					`status` = 1
+			) c1 ON t4.recommandFriendCode = c1.f_code
+			WHERE
+				c1.f_code IS NOT NULL
+			<if test="beginTime!=null">
+			  <![CDATA[ AND t4.firstInvestDatetime >= #{beginTime} ]]>
+			</if>
+			<if test="endTime!=null">
+			  <![CDATA[ AND t4.firstInvestDatetime < #{endTime} ]]>
+			</if>
+			GROUP BY
+				c1.f_code
+		) t2 ON t1.f_code = t2.f_code
+	) b ON a.memberId = b.memberId
+  </select>
+
+</mapper>

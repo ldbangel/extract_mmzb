@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.service.dao.DayDetailInfoDao">
+
+ <select id="getDayCashInfoSummary"  resultType="com.kejin.extract.entity.service.DayCashSummaryInfoModel"> 	
+      <![CDATA[ 		
+		SELECT
+			IFNULL(allCashAmount,0) as allCashAmount,
+			IFNULL(largeCashAmount,0) as largeCashAmount,
+			cast(IFNULL(largeCashAmount / allCashAmount,0.00) AS DECIMAL(18,2)) AS percentage
+		FROM
+			(
+				SELECT
+					SUM(c.amount) AS allCashAmount
+				FROM
+					d_cash c
+				WHERE
+					1 = 1
+				AND c.orderTime >= #{beginTime}
+				AND c.orderTime < #{endTime}
+			) a,
+			(
+				SELECT
+					SUM(c.amount) AS largeCashAmount
+				FROM
+					d_cash c
+				WHERE
+					1 = 1
+				AND c.amount > 50000
+				AND c.orderTime >= #{beginTime}
+				AND c.orderTime < #{endTime}
+			) b
+       ]]>     
+ </select>
+    
+ <select id="getDayCashInfoDetail"  resultType="com.kejin.extract.entity.service.DayCashDetailInfoModel">     
+  	<!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 		
+		SELECT
+		  c.memberId,
+		  c.name,
+		  c.phone,
+		  c.province,
+		  c.city,
+		  c.amount
+		FROM
+			d_cash c
+		WHERE 1=1 
+		AND	c.orderTime >= #{beginTime}
+		AND c.orderTime < #{endTime}
+		AND c.payStatus in ('CONFIRMING','REMITING','ACCEPT','SUCCESS')
+		order by c.amount desc
+       ]]> 
+     <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+ 
+ 
+ <select id="getDayInvestInfoSummary"  resultType="com.kejin.extract.entity.service.DayInvestSummaryInfoModel"> 	
+      <![CDATA[ 		
+			SELECT
+				IFNULL(allInvestAmount, 0) AS allInvestAmount,
+				IFNULL(largeInvestAmount, 0) AS largeInvestAmount,
+				cast(IFNULL(largeInvestAmount / allInvestAmount,0.00) AS DECIMAL (18, 2)) AS percentage
+			FROM
+				(
+					SELECT
+						SUM(i.amount) AS allInvestAmount
+					FROM
+						d_regular_invest i
+					WHERE
+						i.operationStatus IN (
+							'PAY_SUCCESS',
+							'BID_SUCCESS'
+						)
+					AND i.operationDate >= #{beginTime}
+					AND i.operationDate < #{endTime}
+				) a,
+				(
+					SELECT
+						SUM(i.amount) AS largeInvestAmount
+					FROM
+						d_regular_invest i
+					WHERE
+						i.operationStatus IN (
+							'PAY_SUCCESS',
+							'BID_SUCCESS'
+						)
+					AND i.amount > 50000
+					AND i.operationDate >= #{beginTime}
+					AND i.operationDate < #{endTime}
+				) b;
+       ]]>     
+ </select>
+    
+ <select id="getDayInvestInfoDetail"  resultType="com.kejin.extract.entity.service.DayInvestDetailInfoModel">     
+  	<!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 		
+			SELECT
+				i.memberId,
+				u.name,
+				u.phone,
+			    i.amount
+			FROM
+				d_regular_invest i
+			LEFT JOIN d_user u ON u.memberId = i.memberId 
+			WHERE
+				i.operationStatus IN (
+					'PAY_SUCCESS',
+					'BID_SUCCESS'
+				)
+			AND i.operationDate >= #{beginTime}
+			AND i.operationDate < #{endTime}
+			order by i.amount desc
+       ]]> 
+    <!--  <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+	
+	
+  <select id="getDayChargeInfoSummary"  resultType="com.kejin.extract.entity.service.DayChargeSummaryInfoModel"> 	
+      <![CDATA[ 		
+			SELECT
+				IFNULL(allChargeAmount, 0) AS allChargeAmount,
+				IFNULL(largeChargeAmount, 0) AS largeChargeAmount,
+				cast(
+					IFNULL(
+						largeChargeAmount / allChargeAmount,
+						0.00
+					) AS DECIMAL (18, 2)
+				) AS percentage
+			FROM
+				(
+					SELECT
+						SUM(c.amount) AS allChargeAmount
+					FROM
+						d_charge c
+					WHERE
+						1 = 1
+					AND c.payDate >= #{beginTime}
+					AND c.payDate < #{endTime}
+				) a,
+				(
+					SELECT
+						SUM(c.amount) AS largeChargeAmount
+					FROM
+						d_charge c
+					WHERE
+						1 = 1
+					AND c.amount > 50000
+					AND c.payDate >= #{beginTime}
+					AND c.payDate < #{endTime}
+				) b
+       ]]>     
+ </select>
+    
+ <select id="getDayChargeInfoDetail"  resultType="com.kejin.extract.entity.service.DayChargeDetailInfoModel">     
+  	<!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
+      <![CDATA[ 		
+			SELECT
+			  c.memberId,
+			  u.name,
+			  u.phone,
+			  c.amount
+			FROM
+				d_charge c LEFT JOIN d_user u ON u.memberId = c.memberId
+			WHERE
+				1 = 1
+			AND c.payDate >= #{beginTime}
+			AND c.payDate < #{endTime}
+			order by c.amount desc
+       ]]> 
+     <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
+ </select>
+ 
+	
+	
+	
+	
+</mapper>
