@@ -54,7 +54,6 @@ public class UserUnRecoveryInterestDetailAction {
 			String unRecovryInfos = unRecoveryInterestService.getUserUnRecoveryInterest(memberId, beginDate, endDate, Integer.valueOf(page));
 			
 			return "getUserUnRecovryInfoDetail("+unRecovryInfos+")";
-			
 		} catch (ParseException e) {
 			e.printStackTrace();
 			return "getError({\"error\":\"时间格式不对  or 请求数据错误\"})";

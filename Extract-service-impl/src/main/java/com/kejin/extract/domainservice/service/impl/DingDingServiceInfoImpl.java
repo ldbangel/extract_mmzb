@@ -65,11 +65,39 @@ public class DingDingServiceInfoImpl implements DingDingInfoService {
 			}
 		}
 		
-		List<DEmployeeModel> insertEmployees = new ArrayList<DEmployeeModel>();
 		if(newUsers != null && newUsers.size() > 0){
-			List<DUserModel> userList = dUserDao.selectByPhone(newUsers);
-			if(userList != null && userList.size() > 0){
-				for(DUserModel model : userList){
+			List<DEmployeeModel> insertEmployees = new ArrayList<DEmployeeModel>();
+			//List<DEmployeeModel> insertEmployeesNoRegister = new ArrayList<DEmployeeModel>();
+			//获取新增人员中原来在employee表中，状态为status=0的人员名单
+			List<DEmployeeModel> historyEmployees = dEmployeeDao.selectHistoryEmployee(newUsers);
+			
+			//获取新增人员并且在钱包注册过的人员
+			List<User> newUsersExceptHistory = new ArrayList<User>();
+			StringBuffer historyPhones = new StringBuffer();
+			for(DEmployeeModel employee : historyEmployees){
+				historyPhones.append(employee.getPhone()).append(",");
+			}
+			for(User user : newUsers){
+				if(!historyPhones.toString().contains(user.getMobile())){
+					newUsersExceptHistory.add(user);
+				}
+			}
+			List<DUserModel> userListWithMemberId = dUserDao.selectByPhone(newUsersExceptHistory);
+			
+			//获取新增人员但未在钱包注册的人员--暂时不作处理
+			List<User> newUsersNoRegister = new ArrayList<User>();
+			StringBuffer withMemberIdPhones = new StringBuffer();
+			for(DUserModel user : userListWithMemberId){
+				withMemberIdPhones.append(user.getPhone()).append(",");
+			}
+			for(User user : newUsersExceptHistory){
+				if(!withMemberIdPhones.toString().contains(user.getMobile())){
+					newUsersNoRegister.add(user);
+				}
+			}
+			
+			if(userListWithMemberId != null && userListWithMemberId.size() > 0){
+				for(DUserModel model : userListWithMemberId){
 					for(User user : newUsers){
 						if(model.getPhone().equals(user.getMobile())){
 							DEmployeeModel employee = new DEmployeeModel();
@@ -105,6 +133,7 @@ public class DingDingServiceInfoImpl implements DingDingInfoService {
 					}
 				}
 			}
+			dEmployeeDao.updateStatus2Active(historyEmployees);
 			dEmployeeDao.insertEmployee(insertEmployees);
 		}
 		

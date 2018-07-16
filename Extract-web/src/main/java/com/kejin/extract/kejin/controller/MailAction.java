@@ -245,8 +245,8 @@ public class MailAction {
      */
     @RequestMapping(value = "screenShot.htm",produces = "text/html; charset=utf-8")
     public void ScreenShot() throws IOException, ParseException{
-    	ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_INCREASE_REPORT);
-    	/*ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_ACHIEVEMENT_REPORT);
+    	ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_ACHIEVEMENT_REPORT);
+    	/*ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_INCREASE_REPORT);
     	ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_REGULAR_REPORT);
     	ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_TRADE_REPORT);
     	ScreenShotUtils.ScreenShot(ScreenShotTypeEnum.DAY_FUNDFLOW_REPORT);

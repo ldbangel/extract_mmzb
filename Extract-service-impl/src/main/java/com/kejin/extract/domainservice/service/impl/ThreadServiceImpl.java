@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kejin.extract.domainservice.common.Excel2AccountBalanceUtil;
@@ -39,7 +40,7 @@ public class ThreadServiceImpl implements ThreadService {
 	private CustodyMemberService custodyMemberService;
 	@Resource(name = "achievementManagerFromProdDao")
 	private AchievementManagerFromProdDao achievementManagerFromProdDao;
-	@Resource(name = "dUserDao")
+	@Autowired
 	private DUserDao dUserDao;
 	
 	@Override

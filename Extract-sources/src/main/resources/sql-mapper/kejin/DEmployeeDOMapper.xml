@@ -33,6 +33,21 @@
        where `status` = 1; 
   	</select>
   	
+  	<select id="selectHistoryEmployee" parameterType="com.kejin.extract.entity.service.User" resultType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+       SELECT
+			memberId,
+			NAME,
+			phone
+		FROM
+			d_employee
+		WHERE
+			`status` = 0 
+		AND phone IN
+		<foreach collection="list" item="model"  open="(" separator="," close=")">
+ 			#{model.mobile}
+		</foreach>
+  	</select>
+  	
   	<insert id="insertEmployee" parameterType="java.util.List">
   		INSERT INTO d_employee (
 			memberId,
@@ -73,6 +88,18 @@
   				d_employee 
   			SET 
   				`status` = 0 , 
+  				modifiedTime = now() 
+  			WHERE 
+  				memberId = #{model.memberId, jdbcType=VARCHAR}
+		</foreach>
+  	</update>
+  	
+  	<update id="updateStatus2Active" parameterType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+  		<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
+  			UPDATE 
+  				d_employee 
+  			SET 
+  				`status` = 1 , 
   				modifiedTime = now() 
   			WHERE 
   				memberId = #{model.memberId, jdbcType=VARCHAR}

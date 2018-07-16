@@ -37,19 +37,28 @@
   	<!-- <include refid="PAGINATION.MYSQL_paginationStart" /> -->
       <![CDATA[ 		
 		SELECT
-		  c.memberId,
-		  c.name,
-		  c.phone,
-		  c.province,
-		  c.city,
-		  c.amount
+			c.memberId,
+			c. NAME,
+			c.phone,
+			u.phoneProvince province,
+			u.phoneCity city,
+			c.amount
 		FROM
 			d_cash c
-		WHERE 1=1 
-		AND	c.orderTime >= #{beginTime}
+		LEFT JOIN d_user u ON c.memberId = u.memberId
+		WHERE
+			1 = 1
+		AND c.orderTime >= #{beginTime}
 		AND c.orderTime < #{endTime}
-		AND c.payStatus in ('CONFIRMING','REMITING','ACCEPT','SUCCESS')
-		order by c.amount desc
+		AND c.payStatus IN (
+			'CONFIRMING',
+			'REMITING',
+			'ACCEPT',
+			'SUCCESS'
+		)
+		AND u.user_role = 'INVESTOR'
+		ORDER BY
+			c.amount DESC
        ]]> 
      <!-- <include refid="PAGINATION.MYSQL_paginationEnd" /> -->
  </select>

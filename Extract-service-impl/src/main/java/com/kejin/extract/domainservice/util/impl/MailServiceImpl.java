@@ -4,6 +4,7 @@ package com.kejin.extract.domainservice.util.impl;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import com.kejin.extract.domainservice.common.FreemarkerUtil;
 import com.kejin.extract.domainservice.service.ActionDetailsInfoService;
 import com.kejin.extract.domainservice.service.BusinessReportInfoService;
 import com.kejin.extract.domainservice.service.OperationInfoService;
+import com.kejin.extract.domainservice.service.PartTimeFinancierAchievementService;
 import com.kejin.extract.domainservice.service.PlatformInfoService;
 import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
 import com.kejin.extract.domainservice.util.MailService;
@@ -91,6 +93,9 @@ public class MailServiceImpl implements MailService {
     
     @Resource(name = "tradeRealTimeDataService")
     private TradeRealTimeDataService tradeRealTimeDataService;
+    
+    @Resource(name = "partTimeFinancierAchievementService")
+	private PartTimeFinancierAchievementService partTimeFinancierAchievementService;
     
 	public void SendMail(MailTypeEnum mail, Date beginTime, Date endTime) throws Exception{
 		Properties prop = new Properties();
@@ -174,6 +179,8 @@ public class MailServiceImpl implements MailService {
 			mimeMessage.setSubject("【妈妈钱包】运营终端日报");
 		}else if("platformRealTimeData".equals(mail.getMailType())){
 			mimeMessage.setSubject("【妈妈钱包】平台实时交易数据");
+		}else if("partTimeFinancierDay".equals(mail.getMailType())){
+			mimeMessage.setSubject("【妈妈钱包】兼职理财师业绩日报");
 		}
 		
 		mimeMessage.setSentDate(new Date());// 发送日期
@@ -186,7 +193,8 @@ public class MailServiceImpl implements MailService {
 				|| "achievementOfWeek".equals(mail.getMailType())
 				|| "actionDetails".equals(mail.getMailType())
 				|| "platformInfoDay".equals(mail.getMailType())
-				|| "platformRealTimeData".equals(mail.getMailType())){
+				|| "platformRealTimeData".equals(mail.getMailType())
+				|| "partTimeFinancierDay".equals(mail.getMailType())){
 			MimeMultipart bodyMultipart = new MimeMultipart("related");// related意味着可以发送html格式的邮件
 			bodyMultipart.addBodyPart(filebodyPart);
 			BodyPart body = new MimeBodyPart();     //表示正文 
@@ -224,13 +232,7 @@ public class MailServiceImpl implements MailService {
 			if("memberBalance".equals(mail.getMailType())){
 				contentPart.setText("任总，您好：\r\n         附件是截止"+DateFormatUtils.getYesterdayDate1()+"凌晨的个人资产排行榜！");
 			}else if("accountBalance".equals(mail.getMailType())){
-				contentPart.setText("各位客户经理，大家好：\r\n         附件是截止"+DateFormatUtils.getCurrentHoursDate1()+"账户余额超过1000元客户的详细信息!\r\n"
-						+"        指标解释：\r\n"
-						+"        最近充值时间：客户最近一次充值的时间;\r\n"
-						+"        最近回款时间：客户最近一次本金回款的时间;\r\n"
-						+"        时间间隔：客户账户中余额停留的时间;\r\n"
-						+"        充值占比：客户账户余额中充值金额所占比例;\r\n"
-						+"        回款占比：客户账户余额中回款金额所占比例.");
+				contentPart.setText("各位客户经理，大家好：\r\n         附件是截止"+DateFormatUtils.getCurrentHoursDate1()+"投资用户账户余额超过1000元客户的详细信息!\r\n");
 			}else if("customerDistribute".equals(mail.getMailType())){
 				contentPart.setText("各位客户经理，大家好：\r\n         附件是"+DateFormatUtils.getYesterdayDate1()+"新注册用户分配给一部和二部的详细名单!");
 			}
@@ -406,6 +408,9 @@ public class MailServiceImpl implements MailService {
 		}else if("platformRealTimeData".equals(mail.getMailType())){
 			Map<String, Object> platformRealTimeData = tradeRealTimeDataService.getTradeRealTimeData();
 			return platformRealTimeData;
+		}else if("partTimeFinancierDay".equals(mail.getMailType())){
+			Map<String, Object> partTimeFinancierData = this.getPartTimeFinancierAchievementInfo(beginTime, endTime);
+			return partTimeFinancierData;
 		}
 		return null;
 	}
@@ -683,6 +688,33 @@ public class MailServiceImpl implements MailService {
 		map.put("growingioDayData", listDay);
 		map.put("growingioMonthData", listMonth);
 		
+		return map;
+	}
+	
+	public Map<String,Object> getPartTimeFinancierAchievementInfo(Date beginTime ,Date endTime){
+		Map<String, Object> map = new HashMap<String, Object>();
+		List<Map<String, Object>> listMapDay = partTimeFinancierAchievementService.getPartTimeFinancierAchievementDayData(beginTime, endTime);
+		
+		Calendar thisMonthBegin = Calendar.getInstance();
+		thisMonthBegin.setTime(new Date());
+		thisMonthBegin.set(Calendar.DAY_OF_MONTH,1);
+		
+		thisMonthBegin.set(thisMonthBegin.get(Calendar.YEAR),
+				thisMonthBegin.get(Calendar.MONTH),
+				thisMonthBegin.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+		
+		Calendar thisMonthEnd = Calendar.getInstance();
+		thisMonthEnd.setTime(thisMonthBegin.getTime());
+		thisMonthEnd.set(Calendar.MONTH, thisMonthEnd.get(Calendar.MONTH) + 1);
+		thisMonthEnd.set(Calendar.DATE, thisMonthEnd.get(Calendar.DATE)-1);
+		thisMonthEnd.set(thisMonthEnd.get(Calendar.YEAR),
+				thisMonthEnd.get(Calendar.MONTH),
+				thisMonthEnd.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+		
+		List<Map<String, Object>> listMapMonth = partTimeFinancierAchievementService.getPartTimeFinancierAchievementDayData(thisMonthBegin.getTime(), thisMonthEnd.getTime());
+		map.put("partTimeFinancierListDay", listMapDay);
+		map.put("partTimeFinancierListMonth", listMapMonth);
+
 		return map;
 	}
 
