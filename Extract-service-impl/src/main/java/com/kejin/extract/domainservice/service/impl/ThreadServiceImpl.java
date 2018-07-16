@@ -102,26 +102,19 @@ public class ThreadServiceImpl implements ThreadService {
 	}
 
 	@Override
-	public BigDecimal getAllAmount() {
-		List<UserInformationResponse> userResponseList = getMemberInfoFromCustody();
+	public BigDecimal getAllBorrowersAmount() {
 		List<EnterpriseInfoResponse> enterResponsList = getEnterInfoFromCustody();
 		long startTime = System.currentTimeMillis();
-		BigDecimal allAmount = new BigDecimal(0);
-		for(UserInformationResponse user : userResponseList){
-			if(user.getAvailableAmount() != null){
-				BigDecimal balance = new BigDecimal(user.getAvailableAmount());
-				allAmount = allAmount.add(balance);
-			}
-		}
+		BigDecimal allBorrowersAmount = new BigDecimal(0);
 		for(EnterpriseInfoResponse enter : enterResponsList){
 			if(enter.getAvailableAmount() != null){
 				BigDecimal balance = new BigDecimal(enter.getAvailableAmount());
-				allAmount = allAmount.add(balance);
+				allBorrowersAmount = allBorrowersAmount.add(balance);
 			}
 		}
 		long endTime = System.currentTimeMillis();
 		logger.info("计算总资产时间为："+(endTime-startTime));
-		return allAmount;
+		return allBorrowersAmount;
 	}
 	
 	public List<UserInformationResponse> getMemberInfoFromCustody() {

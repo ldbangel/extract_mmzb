@@ -5,5 +5,5 @@ import java.math.BigDecimal;
 public interface ThreadService {
 	public BigDecimal exportMemberBalanceExcel();
 	
-	public BigDecimal getAllAmount();
+	public BigDecimal getAllBorrowersAmount();
 }

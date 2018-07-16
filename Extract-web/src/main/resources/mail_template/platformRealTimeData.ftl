@@ -64,10 +64,10 @@
 				<td width="8%">满标项目数</td>
 				<td width="7%">满标金额</td>
 				<td width="8%">未满标金额</td>
-				<td width="8%">用户专户余额</td>
+				<td width="8%">投资用户专户余额</td>
+				<td width="8%">融资用户专户余额</td>
 				<td width="8%">月度定期投资额</td>
-				<td width="6%">个人激活数</td>
-				<td width="6%">企业激活数</td>
+				<td width="6%">余额大于1000未激活</td>
 			</tr>
 			<tr>
 				<td width="10%">${dateTime}</td>
@@ -79,10 +79,10 @@
 				<td width="8%">${bidSuccessNum}</td>
 				<td width="7%">${bidSuccessAmount}</td>
 				<td width="8%">${paySuccessAmount}</td>
-				<td width="8%">${balanceAllAmount}</td>
+				<td width="8%">${balanceAllInvestorAmount}</td>
+				<td width="8%">${balanceAllBorrowersAmount}</td>
 				<td width="8%">${regularInvestAmountOfMonth}</td>
-				<td width="6%">${isActivePersonNums}</td>
-				<td width="6%">${isActiveEnterpriseNums}</td>
+				<td width="6%">${isNoActivePersonNums}</td>
 			</tr>
 		</table>
 	</body>
