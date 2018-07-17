@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.service.dao.WechatPushInfoDao">
+	<select id="selectWechatPushEachInfoNums1" resultType="java.util.Map">
+		SELECT
+			(
+				SELECT
+					count(Id) 
+				FROM
+					member.wechat_user_info w
+				WHERE
+					w.subscribe = 1
+				AND w.`status` = 1
+			) '可收到微信推送消息人数',
+			(
+				SELECT
+					count(Id) 
+				FROM
+					member.wechat_user_info w
+				WHERE
+					w.subscribe = 0
+				AND w.`status` = 2
+			) '微信登录绑定人数',
+			(
+				SELECT
+					count(Id)
+				FROM
+					member.wechat_user_info w
+				WHERE
+					w.subscribe = 0
+				AND w.`status` = 1
+			) '用户取消关注微信公众号,但已绑定',
+			(
+				SELECT
+					count(id)
+				FROM
+					member.wechat_user_info
+				ORDER BY
+					create_time DESC
+			) '可使用微信登录的人数',
+			(
+				SELECT
+					count(id)
+				FROM
+					member.wechat_template_push_msg
+				WHERE
+					to_days(create_time) = to_days(now())
+			) '查询当天微信消息推送的数量';
+	</select>
+	
+	
+	<select id="selectWechatPushEachInfoNums2" resultType="java.util.Map">
+		SELECT
+			t.title,
+			count(m.template_id) nums
+		FROM
+			member.wechat_template_push t
+		LEFT JOIN member.wechat_template_push_msg m ON t.template_id = m.template_id
+		WHERE
+			to_days(m.create_time) = to_days(now())
+		GROUP BY
+			t.title;
+	</select>
+</mapper>

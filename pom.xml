@@ -60,6 +60,8 @@
 			<customer_distribute_department>liudongbo@88mmmoney.com</customer_distribute_department>
 			<platform_info>liudongbo@88mmmoney.com</platform_info>
 			<platform_realtime_data>liudongbo@88mmmoney.com</platform_realtime_data>
+			<partTime_financier>liudongbo@88mmmoney.com</partTime_financier>
+			<wechat_statistics_data>liudongbo@88mmmoney.com</wechat_statistics_data>
 		</properties>
 	</profile>  
 	<profile>
@@ -76,16 +78,43 @@
 			<image_out_path>/opt/files/mamaImageHandle/image/</image_out_path>
 			<pdf_out_path>/opt/files/mamaImageHandle/pdf/</pdf_out_path>
 			<!-- email send users -->
-			<action_details_users>renxiaoyan@88mmmoney.com,weishiwei@88mmmoney.com,renchao@88mmmoney.com,zhangqian@88mmmoney.com,zhouwei@88mmmoney.com,cfgl@88mmmoney.com,liwei@88mmmoney.com</action_details_users>
-			<achievement_users>liwei@88mmmoney.com,weishiwei@88mmmoney.com,cfgl@88mmmoney.com,chenyanru@88mmmoney.com</achievement_users>
-			<operation_users>renxiaoyan@88mmmoney.com,weishiwei@88mmmoney.com,xiaojianbin@88mmmoney.com,jianli@88mmmoney.com,rongqi@88mmmoney.com,liuyuchan@88mmmoney.com,zhangqian@88mmmoney.com,linbaike@88mmmoney.com,liwei@88mmmoney.com</operation_users>
+			<action_details_users>decz@88mmmoney.com</action_details_users>
+			<achievement_users>yjbb@88mmmoney.com</achievement_users>
+			<operation_users>yyrb@88mmmoney.com</operation_users>
 			<member_balance_users>renxiaoyan@88mmmoney.com</member_balance_users>
-			<account_balance_users>liwei@88mmmoney.com,rongqi@88mmmoney.com,weishiwei@88mmmoney.com,cfgl@88mmmoney.com,yunying@88mmmoney.com</account_balance_users>
-			<customer_distribute_department>zhouwei@88mmmoney.com,zhangbin@88mmmoney.com,weishiwei@88mmmoney.com,chenying@88mmmoney.com</customer_distribute_department>
-			<platform_info>liwei@88mmmoney.com,zhangqian@88mmmoney.com,chenhaipeng@88mmmoney.com</platform_info>
-			<platform_realtime_data>renxiaoyan@88mmmoney.com,liming@88mmmoney.com,xiaojianbin@88mmmoney.com,suwenan@88mmmoney.com,liwei@88mmmoney.com,rongqi@88mmmoney.com,jianli@88mmmoney.com,cfgl@88mmmoney.com</platform_realtime_data>
+			<account_balance_users>zhye@88mmmoney.com</account_balance_users>
+			<customer_distribute_department>khfp@88mmmoney.com</customer_distribute_department>
+			<platform_info>zdyy@88mmmoney.com</platform_info>
+			<platform_realtime_data>ssjy@88mmmoney.com</platform_realtime_data>
+			<partTime_financier>yjbb@88mmmoney.com</partTime_financier>
+			<wechat_statistics_data>wxtj@88mmmoney.com</wechat_statistics_data>
 		</properties>
-	</profile>     
+	</profile>  
+	<profile>
+		<id>cloud</id>
+		<properties>
+			<web.work.model>normal</web.work.model>
+			<config.root>/opt/mmsjFiles/config/extract/</config.root>
+			<excel_save_path>/opt/mmsjFiles/excels/</excel_save_path>
+			<!-- screen shot -->
+			<phantomjs_path>/opt/phantomjs/bin/phantomjs</phantomjs_path>
+			<script_path>/opt/mmsjFiles/phantomjs_files/js/</script_path>
+			<target_url>/opt/mmsjFiles/phantomjs_files/html/</target_url>
+			<image_out_path>/opt/mmsjFiles/phantomjs_files/image/</image_out_path>
+			<pdf_out_path>/opt/mmsjFiles/phantomjs_files/pdf/</pdf_out_path>
+			<!-- email send users -->
+			<action_details_users>liudongbo@88mmmoney.com</action_details_users>
+			<achievement_users>liudongbo@88mmmoney.com</achievement_users>
+			<operation_users>liudongbo@88mmmoney.com</operation_users>
+			<member_balance_users>liudongbo@88mmmoney.com</member_balance_users>
+			<account_balance_users>liudongbo@88mmmoney.com</account_balance_users>
+			<customer_distribute_department>liudongbo@88mmmoney.com</customer_distribute_department>
+			<platform_info>liudongbo@88mmmoney.com</platform_info>
+			<platform_realtime_data>liudongbo@88mmmoney.com</platform_realtime_data>
+			<partTime_financier>liudongbo@88mmmoney.com</partTime_financier>
+			<wechat_statistics_data>liudongbo@88mmmoney.com</wechat_statistics_data>
+		</properties>
+	</profile>   
   </profiles>
 	
   <properties>

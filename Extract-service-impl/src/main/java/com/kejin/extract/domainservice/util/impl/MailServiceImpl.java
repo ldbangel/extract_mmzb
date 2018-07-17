@@ -44,6 +44,7 @@ import com.kejin.extract.domainservice.service.OperationInfoService;
 import com.kejin.extract.domainservice.service.PartTimeFinancierAchievementService;
 import com.kejin.extract.domainservice.service.PlatformInfoService;
 import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
+import com.kejin.extract.domainservice.service.WechatInfoService;
 import com.kejin.extract.domainservice.util.MailService;
 import com.sun.mail.util.MailSSLSocketFactory;
 
@@ -69,33 +70,26 @@ public class MailServiceImpl implements MailService {
 	
 	@Resource(name = "increasedInfoService")
     private OperationInfoService increasedInfoService;
-	
 	@Resource(name = "fundFlowInfoService")
     private OperationInfoService fundFlowInfoService;
-	
 	@Resource(name = "investInfoService")
     private OperationInfoService investInfoService;
-	
 	@Resource(name = "tradeInfoService")
     private OperationInfoService tradeInfoService;
-	
     @Resource(name = "simpleReportInfoService")
     private OperationInfoService simpleReportInfoService;
-    
     @Resource(name = "businessReportInfoService")
     private BusinessReportInfoService businessReportInfoService;
-    
     @Resource(name = "actionDetailsInfoService")
     private ActionDetailsInfoService actionDetailsInfoService;
-    
     @Resource(name = "platformInfoService")
     private PlatformInfoService platformInfoService;
-    
     @Resource(name = "tradeRealTimeDataService")
     private TradeRealTimeDataService tradeRealTimeDataService;
-    
     @Resource(name = "partTimeFinancierAchievementService")
 	private PartTimeFinancierAchievementService partTimeFinancierAchievementService;
+    @Resource(name = "wechatInfoService")
+	private WechatInfoService wechatInfoService;
     
 	public void SendMail(MailTypeEnum mail, Date beginTime, Date endTime) throws Exception{
 		Properties prop = new Properties();
@@ -181,6 +175,8 @@ public class MailServiceImpl implements MailService {
 			mimeMessage.setSubject("【妈妈钱包】平台实时交易数据");
 		}else if("partTimeFinancierDay".equals(mail.getMailType())){
 			mimeMessage.setSubject("【妈妈钱包】兼职理财师业绩日报");
+		}else if("wechatStatisticsData".equals(mail.getMailType())){
+			mimeMessage.setSubject("【妈妈钱包】微信统计数据");
 		}
 		
 		mimeMessage.setSentDate(new Date());// 发送日期
@@ -194,7 +190,8 @@ public class MailServiceImpl implements MailService {
 				|| "actionDetails".equals(mail.getMailType())
 				|| "platformInfoDay".equals(mail.getMailType())
 				|| "platformRealTimeData".equals(mail.getMailType())
-				|| "partTimeFinancierDay".equals(mail.getMailType())){
+				|| "partTimeFinancierDay".equals(mail.getMailType())
+				|| "wechatStatisticsData".equals(mail.getMailType())){
 			MimeMultipart bodyMultipart = new MimeMultipart("related");// related意味着可以发送html格式的邮件
 			bodyMultipart.addBodyPart(filebodyPart);
 			BodyPart body = new MimeBodyPart();     //表示正文 
@@ -411,6 +408,9 @@ public class MailServiceImpl implements MailService {
 		}else if("partTimeFinancierDay".equals(mail.getMailType())){
 			Map<String, Object> partTimeFinancierData = this.getPartTimeFinancierAchievementInfo(beginTime, endTime);
 			return partTimeFinancierData;
+		}else if("wechatStatisticsData".equals(mail.getMailType())){
+			Map<String, Object> wechatStatisticsData = this.getWechatStatisticsData();
+			return wechatStatisticsData;
 		}
 		return null;
 	}
@@ -715,6 +715,13 @@ public class MailServiceImpl implements MailService {
 		map.put("partTimeFinancierListDay", listMapDay);
 		map.put("partTimeFinancierListMonth", listMapMonth);
 
+		return map;
+	}
+	
+	public Map<String,Object> getWechatStatisticsData(){
+		Map<String, Object> map = new HashMap<String, Object>();
+		List<Map<String, Object>> resultList = wechatInfoService.getWechatPushInfoNums();
+		map.put("resultList", resultList);
 		return map;
 	}
 

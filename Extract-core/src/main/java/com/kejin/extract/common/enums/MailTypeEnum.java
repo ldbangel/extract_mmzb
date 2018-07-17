@@ -22,8 +22,10 @@ public enum MailTypeEnum {
 	PLATFORM_INFO_DAY("platformInfoDay", "platformInfoDay.ftl", "", SysConstantsConfig.PLATFORM_INFO),
 	//平台交易实时数据日报
 	PLATFORM_REALTIME_DATA("platformRealTimeData", "platformRealTimeData.ftl", "", SysConstantsConfig.PLATFORM_REALTIME_DATA),
-	//平台交易实时数据日报
-	PARTTIME_FINANCIER_DAY("partTimeFinancierDay", "partTimeFinancierDay.ftl", "", SysConstantsConfig.PARTTIME_FINANCIER_DAY);
+	//兼职理财师业绩日报
+	PARTTIME_FINANCIER_DAY("partTimeFinancierDay", "partTimeFinancierDay.ftl", "", SysConstantsConfig.PARTTIME_FINANCIER_DAY),
+	//微信统计报表
+	WECHAT_STATISTICS_DATA("wechatStatisticsData", "wechatStatistics.ftl", "", SysConstantsConfig.WECHAT_STATISTICS_DATA);
 	
 	private String mailType;
 	private String templateName;

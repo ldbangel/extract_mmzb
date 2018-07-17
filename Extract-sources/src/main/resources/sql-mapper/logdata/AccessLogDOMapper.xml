@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.logdata.service.dao.AccessLogDao">
+	<select id="getLogUrlStatistics" resultType="java.util.Map">
+		SELECT
+			CASE
+		WHEN request_url = '/index.htm' THEN
+			'首页访问量'
+		WHEN request_url = '/products.htm' THEN
+			'定期列表访问量'
+		WHEN request_url = '/inviteFriend.htm' THEN
+			'邀请有奖访问量'
+		WHEN request_url = '/my/memberCenter.htm' THEN
+			'会员中心访问量'
+		END request_url,
+		 count(0) nums
+		FROM
+			log.f_access_logs_raw
+		WHERE
+			local_date = DATE(now())
+		AND (
+			(
+				request_url = '/index.htm'
+				AND request_args LIKE 'statistics=index%'
+			)
+			OR (
+				request_url = '/products.htm'
+				AND request_args LIKE 'statistics=products%'
+			)
+			OR (
+				request_url = '/inviteFriend.htm'
+				AND request_args LIKE 'statistics=inviteFriend%'
+			)
+			OR (
+				request_url = '/my/memberCenter.htm'
+				AND request_args LIKE 'statistics=memberCenter%'
+			)
+		)
+		GROUP BY
+			request_url;
+	</select>
+</mapper>

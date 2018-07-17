@@ -54,11 +54,12 @@
                 <ref bean="accountBalanceDayMailDaemonTrigger" />
                 <ref bean="customerDistributeDayMailDaemonTrigger" />
                 <ref bean="platformDayMailDaemonTrigger" />
-                <ref bean="tradeRealTimeDataDayMailDaemonTrigger" />
+                <!-- <ref bean="tradeRealTimeDataDayMailDaemonTrigger" /> -->
                 <ref bean="partTimeFinancierDayMailDaemonTrigger" />
                 <ref bean="operationWeekMailDaemonTrigger" />
                 <ref bean="achievementWeekMailDaemonTrigger" />
                 <ref bean="operationMonthMailDaemonTrigger" />
+                <ref bean="wechatStatisticsMailDaemonTrigger" />
                 
                 <!-- screen shot -->
                 <ref bean="screenShotDayDaemonTrigger" />
@@ -600,6 +601,23 @@
         </property>
     </bean>   
     <bean id="achievementWeekMailDaemon" class="com.kejin.extract.time.task.mail.AchievementWeekMailDaemon"/>
+    
+    <!-- 微信推送数据统计邮件发送-->
+    <bean id="wechatStatisticsMailDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="wechatStatisticsMailDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${wechatStatisticsMai.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="wechatStatisticsMailDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="wechatStatisticsMailDaemon" />
+        </property>
+    </bean>   
+    <bean id="wechatStatisticsMailDaemon" class="com.kejin.extract.ext.mail.WechatStatisticsMailDaemon"/>
     
     <!-- day 屏幕截图 -->
     <bean id="screenShotDayDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">

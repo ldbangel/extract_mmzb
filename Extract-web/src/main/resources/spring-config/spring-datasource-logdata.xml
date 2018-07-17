@@ -10,11 +10,11 @@
 	http://www.springframework.org/schema/context/spring-context-4.1.xsd">
 	
   	<!-- kejin数据库数据源 -->
-  	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method ="close" >    
+  	<bean id="logDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method ="close" >    
        <!-- 数据库基本信息配置 -->  
-       <property name = "username" value = "${kejin.jdbc.username}" />    
-       <property name = "password" value = "${kejin.jdbc.password}" />    
-       <property name = "url" value = "${kejin.jdbc.jdbcUrl}?allowMultiQueries=true" />    
+       <property name = "username" value = "${logdata.jdbc.username}" />    
+       <property name = "password" value = "${logdata.jdbc.password}" />    
+       <property name = "url" value = "${logdata.jdbc.jdbcUrl}?allowMultiQueries=true" />    
        <property name = "filters" value = "stat" />    
         <!-- 最大并发连接数 -->  
        <property name = "maxActive" value = "20" />  
@@ -42,14 +42,13 @@
   	</bean>
    
     <!--配置sqlSessionFactory 并读取mybatis的一些配置-->
-    <bean name = "sqlSessionFactory" class = "org.mybatis.spring.SqlSessionFactoryBean">
-	    <property name="dataSource" ref="dataSource"/>
+    <bean name = "logSqlSessionFactory" class = "org.mybatis.spring.SqlSessionFactoryBean">
+	    <property name="dataSource" ref="logDataSource"/>
 	    <!-- 配置mybatis的日志记录 -->
 	    <property name="configLocation" value="classpath:mybatis-config.xml"/>   
 	    <property name="mapperLocations">
 	    	<list>
-	    		<value>classpath:sql-mapper/kejin/*.xml</value>
-	    		<value>classpath:sql-mapper/kejin/service/*.xml</value>
+	    		<value>classpath:sql-mapper/logdata/*.xml</value>
 	    	</list>
 	    </property>
 	   	<property name="plugins">
@@ -68,18 +67,17 @@
     
     <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.kejin.extract.kejin.process.dao,
-											com.kejin.extract.kejin.service.dao"/>
-		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="basePackage" value="com.kejin.extract.logdata.service.dao"/>
+		<property name="sqlSessionFactoryBeanName" value="logSqlSessionFactory" />
 	</bean>
     
     <!-- 配置事物 -->
-   	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    	<property name="dataSource" ref="dataSource"/>
+   	<bean id="logTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="logDataSource"/>
     </bean>
     
    	<!-- 事物的具体内容 -->
-	<tx:advice id="kejinTransactionAdvice" transaction-manager="transactionManager">
+	<tx:advice id="logTransactionAdvice" transaction-manager="logTransactionManager">
 		<tx:attributes>
 			<tx:method name="add*" propagation="REQUIRED" />
 			<tx:method name="insert*" propagation="REQUIRED" />

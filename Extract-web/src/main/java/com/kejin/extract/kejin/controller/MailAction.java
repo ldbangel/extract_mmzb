@@ -43,6 +43,7 @@ import com.kejin.extract.domainservice.service.MemberBalanceInfoService;
 import com.kejin.extract.domainservice.service.PartTimeFinancierAchievementService;
 import com.kejin.extract.domainservice.service.ThreadService;
 import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
+import com.kejin.extract.domainservice.service.WechatInfoService;
 import com.kejin.extract.domainservice.util.MailService;
 import com.kejin.extract.integration.custody.CustodyMemberService;
 import com.mmzb.custody.shbk.service.request.QueryUserInfoRequest;
@@ -81,6 +82,8 @@ public class MailAction {
 	private CustodyMemberService custodyMemberService;
 	@Resource(name = "threadService")
 	private ThreadService threadService;
+	@Resource(name = "wechatInfoService")
+	private WechatInfoService wechatInfoService;
 	
 	//同步统计个人资产(定期债权)
 	@RequestMapping(value = "syncMemberBalance.htm",produces = "text/html; charset=utf-8")
@@ -154,14 +157,17 @@ public class MailAction {
 		/*logger.info("-----大额报表-----");
 		mailService.SendMail(MailTypeEnum.ACTION_DETAILS, beginTime, endTime);*/
 		
-		logger.info("-----运营终端统计日报-----");
-		mailService.SendMail(MailTypeEnum.PLATFORM_INFO_DAY, beginTime, endTime);
+		/*logger.info("-----运营终端统计日报-----");
+		mailService.SendMail(MailTypeEnum.PLATFORM_INFO_DAY, beginTime, endTime);*/
 		
 		/*logger.info("-----平台实时交易数据日报-----");
 		mailService.SendMail(MailTypeEnum.PLATFORM_REALTIME_DATA, beginTime, endTime);*/
 		
 		/*logger.info("-----兼职理财师日报-----");
 		mailService.SendMail(MailTypeEnum.PARTTIME_FINANCIER_DAY, beginTime, endTime);*/
+		
+		logger.info("-----微信统计数据报表-----");
+		mailService.SendMail(MailTypeEnum.WECHAT_STATISTICS_DATA, beginTime, endTime);
     }
     
     @RequestMapping(value = "weekMailTest.htm",produces = "text/html; charset=utf-8")
@@ -333,6 +339,12 @@ public class MailAction {
     	System.out.println("signature:"+signature+"---timestamp:"+timestamp+"---nonce:"+nonce+"---encrypt:"+encrypt);
     	String result = EventChangeHelper.encryptCallBackInfo(signature, timestamp, nonce, encrypt);
     	response.getWriter().append(result);
+    }
+    
+    @RequestMapping(value = "getWechatPushInfoNums.htm",produces = "text/html; charset=utf-8")
+    public String getWechatPushInfoNums(){
+    	List<Map<String,Object>> list = wechatInfoService.getWechatPushInfoNums();
+    	return null;
     }
     
     
