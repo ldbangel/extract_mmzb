@@ -144,11 +144,10 @@ public class MailAction {
     	/*logger.info("--------发送个人资产报表邮件开始--------");
     	mailService.SendMail(MailTypeEnum.MEMBERBALANCE, beginTime, endTime);*/
 		
-		/*logger.info("--------发送账户余额报表邮件开始--------");
-		businessReportInfoService.getAccountBalanceInfo();
-		logger.info("----账户余额excel已生成----");
-		mailService.SendMail(MailTypeEnum.ACCOUNT_BALANCE, beginTime, endTime);
-		logger.info("----账户余额邮件发送完毕----");*/
+		logger.info("-------平台交易实时数据邮件发送-------");
+		mailService.SendMail(MailTypeEnum.PLATFORM_REALTIME_DATA, new Date(), new Date());
+		logger.info("-----账户余额邮件发送开始----");
+		mailService.SendMail(MailTypeEnum.ACCOUNT_BALANCE, new Date(), new Date());
 		
 		/*logger.info("-----客户分配-----");
 		customerInfoService.GeneraterDistributeExcel(beginTime, endTime);
@@ -160,14 +159,11 @@ public class MailAction {
 		/*logger.info("-----运营终端统计日报-----");
 		mailService.SendMail(MailTypeEnum.PLATFORM_INFO_DAY, beginTime, endTime);*/
 		
-		/*logger.info("-----平台实时交易数据日报-----");
-		mailService.SendMail(MailTypeEnum.PLATFORM_REALTIME_DATA, beginTime, endTime);*/
-		
 		/*logger.info("-----兼职理财师日报-----");
 		mailService.SendMail(MailTypeEnum.PARTTIME_FINANCIER_DAY, beginTime, endTime);*/
 		
-		logger.info("-----微信统计数据报表-----");
-		mailService.SendMail(MailTypeEnum.WECHAT_STATISTICS_DATA, beginTime, endTime);
+		/*logger.info("-----微信统计数据报表-----");
+		mailService.SendMail(MailTypeEnum.WECHAT_STATISTICS_DATA, beginTime, endTime);*/
     }
     
     @RequestMapping(value = "weekMailTest.htm",produces = "text/html; charset=utf-8")

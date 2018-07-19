@@ -14,15 +14,6 @@
 			) '可收到微信推送消息人数',
 			(
 				SELECT
-					count(Id) 
-				FROM
-					member.wechat_user_info w
-				WHERE
-					w.subscribe = 0
-				AND w.`status` = 2
-			) '微信登录绑定人数',
-			(
-				SELECT
 					count(Id)
 				FROM
 					member.wechat_user_info w

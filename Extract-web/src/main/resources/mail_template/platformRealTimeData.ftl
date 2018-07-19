@@ -51,38 +51,26 @@
 			}
 		</style>
 	</head>
-	<h2>平台实时交易数据</h2>
+	<h2>${dateTime}实时数据</h2>
 	<body>
 		<table width="100%" cellspacing="0">
 			<tr class="tr2">
-				<td width="10%">时间</td>
-				<td width="8%">定期宝投资额</th>
-				<td width="8%">定期宝复投</th>
-				<td width="8%">定期宝新增</th>
-				<td width="8%">债权投资额</td>
-				<td width="7%">回款金额</td>
-				<td width="8%">满标项目数</td>
-				<td width="7%">满标金额</td>
-				<td width="8%">未满标金额</td>
-				<td width="8%">投资用户专户余额</td>
-				<td width="8%">融资用户专户余额</td>
-				<td width="8%">月度定期投资额</td>
-				<td width="6%">余额大于1000未激活</td>
+				<td width="14%">定期宝投资</th>
+				<td width="14%">定期宝复投</th>
+				<td width="14%">定期宝新增</th>
+				<td width="14%">债权投资</td>
+				<td width="14%">回款金额</td>
+				<td width="14%">未满标金额</td>
+				<td width="16%">用户专户余额</td>
 			</tr>
 			<tr>
-				<td width="10%">${dateTime}</td>
-				<td width="8%">${regularInvestAmount}</th>
-				<td width="8%">${reInvestAmount}</th>
-				<td width="8%">${newInvestAmount}</th>
-				<td width="8%">${creditInvestAmount}</td>
-				<td width="7%">${recoveryAllAmount}</td>
-				<td width="8%">${bidSuccessNum}</td>
-				<td width="7%">${bidSuccessAmount}</td>
-				<td width="8%">${paySuccessAmount}</td>
-				<td width="8%">${balanceAllInvestorAmount}</td>
-				<td width="8%">${balanceAllBorrowersAmount}</td>
-				<td width="8%">${regularInvestAmountOfMonth}</td>
-				<td width="6%">${isNoActivePersonNums}</td>
+				<td width="14%">${regularInvestAmount}</th>
+				<td width="14%">${reInvestAmount}</th>
+				<td width="14%">${newInvestAmount}</th>
+				<td width="14%">${creditInvestAmount}</td>
+				<td width="14%">${recoveryAllAmount}</td>
+				<td width="14%">${paySuccessAmount}</td>
+				<td width="16%">${balanceAllInvestorAmount}</td>
 			</tr>
 		</table>
 	</body>

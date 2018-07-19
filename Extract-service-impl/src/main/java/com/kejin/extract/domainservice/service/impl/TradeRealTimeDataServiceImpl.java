@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,8 @@ import com.kejin.extract.mmmoney.service.dao.TradeRealTimeDataDao;
  */
 @Service("tradeRealTimeDataService")
 public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
+	private Logger logger = Logger.getLogger(this.getClass());
+	
 	@Autowired
 	private TradeRealTimeDataDao tradeRealTimeDataDao;
 	@Resource(name = "threadService")
@@ -59,7 +62,8 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 				end.getTime(), thisMonthBegin.getTime(), thisMonthEnd.getTime());
 		//获取所有投资者的用户余额
 		BigDecimal allInvestorAmount = threadService.exportMemberBalanceExcel();
-		BigDecimal allBorrowersAmount = threadService.getAllBorrowersAmount();
+		logger.info("用户专户余额为:"+allInvestorAmount);
+		//BigDecimal allBorrowersAmount = threadService.getAllBorrowersAmount();
 		
 		//格式转换
 		DecimalFormat format3 = new DecimalFormat("#");
@@ -112,7 +116,7 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 			resultMap.put("balanceAllAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
 		}*/
 		resultMap.put("balanceAllInvestorAmount", format3.format(allInvestorAmount.divide(new BigDecimal(10000)))+"万");
-		resultMap.put("balanceAllBorrowersAmount", format3.format(allBorrowersAmount.divide(new BigDecimal(10000)))+"万");
+		//resultMap.put("balanceAllBorrowersAmount", format3.format(allBorrowersAmount.divide(new BigDecimal(10000)))+"万");
 		if(resultMap.get("regularInvestAmountOfMonth") != null){
 			resultMap.put("regularInvestAmountOfMonth", format3.format(((BigDecimal) resultMap.get("regularInvestAmountOfMonth")).divide(new BigDecimal(10000)))+"万");
 		}else{
@@ -120,11 +124,12 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 		}
 		
 		//日期时间
-		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
-		String ymd = sdf.format(begin.getTime());
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd-HH");
+		String ymd = sdf.format(new Date());
 		ymd = ymd.replaceFirst("-","年");
 		ymd = ymd.replaceFirst("-","月");
-		ymd = ymd+"日";
+		ymd = ymd.replaceFirst("-","日");
+		ymd = ymd+"时";
 		resultMap.put("dateTime", ymd);
 		return resultMap;
 	}

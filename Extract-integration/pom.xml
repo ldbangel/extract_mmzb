@@ -26,6 +26,12 @@
 		<artifactId>spring-context</artifactId>
 	</dependency>
 	
+	<!-- log -->
+	<dependency>
+	    <groupId>log4j</groupId>
+	    <artifactId>log4j</artifactId>
+	</dependency>
+	
 	<!-- CXF -->
 	<dependency>
 		<groupId>org.apache.cxf</groupId>
