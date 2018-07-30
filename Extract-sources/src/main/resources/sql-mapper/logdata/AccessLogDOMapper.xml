@@ -5,13 +5,13 @@
 		SELECT
 			CASE
 		WHEN request_url = '/index.htm' THEN
-			'首页访问量'
+			'indexNums'
 		WHEN request_url = '/products.htm' THEN
-			'定期列表访问量'
+			'productNums'
 		WHEN request_url = '/inviteFriend.htm' THEN
-			'邀请有奖访问量'
+			'inviteNums'
 		WHEN request_url = '/my/memberCenter.htm' THEN
-			'会员中心访问量'
+			'vipNums'
 		END request_url,
 		 count(0) nums
 		FROM

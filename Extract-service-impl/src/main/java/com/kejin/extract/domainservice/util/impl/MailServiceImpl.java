@@ -719,10 +719,8 @@ public class MailServiceImpl implements MailService {
 	}
 	
 	public Map<String,Object> getWechatStatisticsData(){
-		Map<String, Object> map = new HashMap<String, Object>();
-		List<Map<String, Object>> resultList = wechatInfoService.getWechatPushInfoNums();
-		map.put("resultList", resultList);
-		return map;
+		Map<String, Object> result = wechatInfoService.getWechatPushInfoNums();
+		return result;
 	}
 
 }

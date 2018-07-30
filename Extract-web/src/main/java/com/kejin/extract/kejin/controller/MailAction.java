@@ -340,7 +340,7 @@ public class MailAction {
     
     @RequestMapping(value = "getWechatPushInfoNums.htm",produces = "text/html; charset=utf-8")
     public String getWechatPushInfoNums(){
-    	List<Map<String,Object>> list = wechatInfoService.getWechatPushInfoNums();
+    	Map<String,Object> result = wechatInfoService.getWechatPushInfoNums();
     	return null;
     }
     

@@ -11,7 +11,7 @@
 				WHERE
 					w.subscribe = 1
 				AND w.`status` = 1
-			) '可收到微信推送消息人数',
+			) ableReceivedWechatPushNums,
 			(
 				SELECT
 					count(Id)
@@ -20,7 +20,7 @@
 				WHERE
 					w.subscribe = 0
 				AND w.`status` = 1
-			) '用户取消关注微信公众号,但已绑定',
+			) bindAndCancledNums,
 			(
 				SELECT
 					count(id)
@@ -28,7 +28,7 @@
 					member.wechat_user_info
 				ORDER BY
 					create_time DESC
-			) '可使用微信登录的人数',
+			) ableWechatLoginNums,
 			(
 				SELECT
 					count(id)
@@ -36,7 +36,7 @@
 					member.wechat_template_push_msg
 				WHERE
 					to_days(create_time) = to_days(now())
-			) '查询当天微信消息推送的数量';
+			) todayWechatPushNums;
 	</select>
 	
 	
