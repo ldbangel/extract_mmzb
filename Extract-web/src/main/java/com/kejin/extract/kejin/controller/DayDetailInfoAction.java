@@ -38,7 +38,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 		
 		String s = dayDetailInfoService.getDayCashInfoDetail(null,null,Integer.valueOf(page));
@@ -53,7 +53,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 		
 		String s = dayDetailInfoService.getDayChargeInfoDetail(null,null,Integer.valueOf(page));
@@ -78,7 +78,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 		
 		String s = dayDetailInfoService.getDayInvestInfoDetail(null,null,Integer.valueOf(page));
@@ -132,7 +132,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 		
 		try {
@@ -162,7 +162,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 			
 		
@@ -223,7 +223,7 @@ public class DayDetailInfoAction {
 		String page = req.getParameter("page");
 		boolean isNum =page!=null?page.matches("[0-9]+"):false; 
 		if(!isNum){
-			page = "0";
+			page = "1";
 		}
 		
 		try {

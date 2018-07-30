@@ -46,6 +46,7 @@ import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
 import com.kejin.extract.domainservice.service.WechatInfoService;
 import com.kejin.extract.domainservice.util.MailService;
 import com.kejin.extract.integration.custody.CustodyMemberService;
+import com.mmzb.custody.shbk.service.request.EnterpriseInfoRequest;
 import com.mmzb.custody.shbk.service.request.QueryUserInfoRequest;
 import com.mmzb.custody.shbk.service.response.UserInformationResponse;
 
@@ -340,6 +341,17 @@ public class MailAction {
     @RequestMapping(value = "getWechatPushInfoNums.htm",produces = "text/html; charset=utf-8")
     public String getWechatPushInfoNums(){
     	List<Map<String,Object>> list = wechatInfoService.getWechatPushInfoNums();
+    	return null;
+    }
+    
+    //获取企业投资的可用余额
+    @RequestMapping(value = "getEnterInvestorInfo.htm",produces = "text/html; charset=utf-8")
+    public String getEnterInvestorInfo(){
+    	EnterpriseInfoRequest request = new EnterpriseInfoRequest();
+    	request.setMemberId("100001280563");
+    	request.setUserRole("INVESTOR");
+    	UserInformationResponse response = custodyMemberService.queryEnterpriseInfo(request);
+    	System.out.println("企业投资人的可用余额为:"+response.getAvailableAmount());
     	return null;
     }
     
