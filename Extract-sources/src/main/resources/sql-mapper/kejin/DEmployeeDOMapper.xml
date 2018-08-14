@@ -7,6 +7,7 @@
 		name,
 		phone,
 		f_code fCode,
+		email,
 		zone,
 		description,
 		department,
@@ -33,7 +34,7 @@
        where `status` = 1; 
   	</select>
   	
-  	<select id="selectHistoryEmployee" parameterType="com.kejin.extract.entity.service.User" resultType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
+  	<select id="selectHistoryEmployee" parameterType="java.util.List" resultType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
        SELECT
 			memberId,
 			NAME,
@@ -82,28 +83,29 @@
 		</foreach>
   	</insert>
   	
-  	<update id="updateStatus" parameterType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
-  		<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
-  			UPDATE 
-  				d_employee 
-  			SET 
-  				`status` = 0 , 
-  				modifiedTime = now() 
-  			WHERE 
-  				memberId = #{model.memberId, jdbcType=VARCHAR}
-		</foreach>
+  	<update id="updateStatus" parameterType="java.util.List">
+		UPDATE 
+			d_employee 
+		SET 
+			`status` = 0 , 
+			modifiedTime = now() 
+		WHERE memberId in
+  		<foreach collection="list" item="model" open="(" separator="," close=")">
+  			#{model.memberId, jdbcType=VARCHAR}
+     	</foreach> 
   	</update>
   	
-  	<update id="updateStatus2Active" parameterType="com.kejin.extract.entity.kejinTest.DEmployeeModel">
-  		<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
-  			UPDATE 
-  				d_employee 
-  			SET 
-  				`status` = 1 , 
-  				modifiedTime = now() 
-  			WHERE 
-  				memberId = #{model.memberId, jdbcType=VARCHAR}
-		</foreach>
+  	<update id="updateStatus2Active" parameterType="java.util.List">
+		UPDATE 
+			d_employee 
+		SET 
+			`status` = 1 , 
+			modifiedTime = now() 
+		WHERE 
+			memberId in
+		<foreach collection="list" item="model" open="(" separator="," close=")">
+  			#{model.memberId, jdbcType=VARCHAR}
+     	</foreach> 
   	</update>
   
 </mapper>

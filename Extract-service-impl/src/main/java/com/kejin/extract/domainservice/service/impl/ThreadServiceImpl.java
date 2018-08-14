@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 
 import com.kejin.extract.domainservice.common.Excel2AccountBalanceUtil;
 import com.kejin.extract.domainservice.service.ThreadService;
+import com.kejin.extract.entity.kejinTest.DEmployeeModel;
 import com.kejin.extract.integration.custody.CustodyMemberService;
+import com.kejin.extract.kejin.process.dao.DEmployeeDao;
+import com.kejin.extract.kejin.process.dao.DMemberBalanceDao;
 import com.kejin.extract.kejin.process.dao.DUserDao;
 import com.kejin.extract.mmmoney.service.dao.AchievementManagerFromProdDao;
 import com.mmzb.custody.shbk.service.request.EnterpriseInfoRequest;
@@ -38,10 +41,14 @@ public class ThreadServiceImpl implements ThreadService {
 	
 	@Resource(name = "custodyMemberService")
 	private CustodyMemberService custodyMemberService;
-	@Resource(name = "achievementManagerFromProdDao")
+	@Autowired
 	private AchievementManagerFromProdDao achievementManagerFromProdDao;
 	@Autowired
+	private DMemberBalanceDao dMemberBalanceDao;
+	@Autowired
 	private DUserDao dUserDao;
+	@Autowired
+	private DEmployeeDao dEmployeeDao;
 	
 	@Override
 	public BigDecimal exportMemberBalanceExcel() {
@@ -91,8 +98,50 @@ public class ThreadServiceImpl implements ThreadService {
 		long endTime3 = System.currentTimeMillis();
 		logger.info("转换时间为："+(endTime3-endTime2));
 		
+		//获取前一天账户余额
+		List<Map<String,Object>> balanceList = dMemberBalanceDao.selectMemberBalanceByMemberId(result);
+		for(Map<String,Object> map : result){
+			for(Map<String,Object> balance : balanceList){
+				if(map.get("memberId").equals(balance.get("memberId"))){
+					map.put("yestodayBalance", balance.get("balance"));
+				}
+			}
+		}
+		
+		//获取最近操作记录信息
+		getLatestActiveInfo(result);
+		
+		/**
+		 * 按客户经理拆分
+		 */
+		List<DEmployeeModel> employeeList= dEmployeeDao.select();
+		StringBuffer names = new StringBuffer();
+		for(DEmployeeModel employee : employeeList){
+			names = names.append(employee.getName()).append(";");
+		}
+		
+		for(DEmployeeModel employee : employeeList){
+			List<Map<String,Object>> resultList = new ArrayList<Map<String,Object>>();
+			for(Map<String,Object> map : result){
+				if(map.get("financialManager")!=null
+						&& !"".equals(map.get("financialManager"))
+						&& (names.toString()).contains((String) map.get("financialManager"))){
+					if(employee.getName().equals(map.get("financialManager"))){
+						resultList.add(map);
+					}
+				}
+			}
+			if(resultList.size() > 0){
+				try {
+					Excel2AccountBalanceUtil.excelUtil(resultList,employee.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		try {
-			Excel2AccountBalanceUtil.excelUtil(result);
+			Excel2AccountBalanceUtil.excelUtil(result,"");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -156,6 +205,53 @@ public class ThreadServiceImpl implements ThreadService {
 		logger.info("接口查询时间为："+(endTime-startTime));
 		
 		return userResponseList;
+	}
+	
+	//获取最近个人动作信息
+	public List<Map<String,Object>> getLatestActiveInfo(List<Map<String,Object>> result){
+		long startTime = System.currentTimeMillis();
+		List<Map<String,Object>> investInfoList = achievementManagerFromProdDao.getLatestInvestInfo();
+		List<Map<String,Object>> cashInfoList = achievementManagerFromProdDao.getLatestCashInfo();
+		List<Map<String,Object>> chargeInfoList = achievementManagerFromProdDao.getLatestChargeInfo();
+		List<Map<String,Object>> recoveryInfoList = achievementManagerFromProdDao.getLatestRecoveryInfo();
+		long endTime = System.currentTimeMillis();
+		logger.info("最近个人动作信息查询时间为:"+(endTime-startTime));
+		
+		for(Map<String,Object> map : result){
+			for(Map<String,Object> invest : investInfoList){
+				if(map.get("memberId").equals(invest.get("memberId"))){
+					map.put("latestInvestTime", invest.get("investTime"));
+					map.put("latestInvestAmount", invest.get("investAmount"));
+					break;
+				}
+			}
+			
+			for(Map<String,Object> cash : cashInfoList){
+				if(map.get("memberId").equals(cash.get("memberId"))){
+					map.put("latestCashTime", cash.get("cashTime"));
+					map.put("latestCashAmount", cash.get("cashAmount"));
+					break;
+				}
+			}
+			
+			for(Map<String,Object> charge : chargeInfoList){
+				if(map.get("memberId").equals(charge.get("memberId"))){
+					map.put("latestChargeTime", charge.get("chargeTime"));
+					map.put("latestChargeAmount", charge.get("chargeAmount"));
+					break;
+				}
+			}
+			
+			for(Map<String,Object> recovery : recoveryInfoList){
+				if(map.get("memberId").equals(recovery.get("memberId"))){
+					map.put("latestRecoveryTime", recovery.get("recoveryTime"));
+					map.put("latestRecoveryAmount", recovery.get("recoveryAmount"));
+					break;
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	public List<EnterpriseInfoResponse> getEnterInfoFromCustody(){

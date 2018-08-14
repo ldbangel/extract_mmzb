@@ -60,6 +60,21 @@
 		WHERE
 			SETTLE_DATE = DATE_FORMAT(SUBDATE(curdate(), INTERVAL 1 DAY),'%Y%m%d')
 	</select>
+	
+	<select id="selectMemberBalanceByMemberId" parameterType="java.util.List" resultType="java.util.Map">
+		SELECT
+			MEMBER_ID memberId,
+			BALANCE balance
+		FROM
+			d_member_balance
+		WHERE
+		SETTLE_DATE = DATE_FORMAT(date_sub(CURDATE(), INTERVAL 1 DAY),'%Y%m%d')
+		AND user_role = 'INVESTOR'
+		AND MEMBER_ID IN
+		<foreach collection="result" item="model" open="(" separator="," close=")"> 
+			#{model.memberId}
+		</foreach>
+	</select>
   
 	<insert id="insertMemberBalances" parameterType="java.util.List" useGeneratedKeys="true">
 	    INSERT INTO `d_member_balance` (

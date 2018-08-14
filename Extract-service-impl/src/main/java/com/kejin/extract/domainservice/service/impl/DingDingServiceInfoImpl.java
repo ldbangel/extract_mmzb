@@ -133,8 +133,12 @@ public class DingDingServiceInfoImpl implements DingDingInfoService {
 					}
 				}
 			}
-			dEmployeeDao.updateStatus2Active(historyEmployees);
-			dEmployeeDao.insertEmployee(insertEmployees);
+			if(historyEmployees!=null && historyEmployees.size() > 0){
+				dEmployeeDao.updateStatus2Active(historyEmployees);
+			}
+			if(insertEmployees!=null && insertEmployees.size() > 0){
+				dEmployeeDao.insertEmployee(insertEmployees);
+			}
 		}
 		
 		if(updateUsers != null && updateUsers.size() > 0){

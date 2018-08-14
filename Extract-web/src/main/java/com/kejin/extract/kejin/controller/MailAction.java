@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +47,7 @@ import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
 import com.kejin.extract.domainservice.service.WechatInfoService;
 import com.kejin.extract.domainservice.util.MailService;
 import com.kejin.extract.integration.custody.CustodyMemberService;
+import com.kejin.extract.kejin.process.dao.DEmployeeDao;
 import com.mmzb.custody.shbk.service.request.EnterpriseInfoRequest;
 import com.mmzb.custody.shbk.service.request.QueryUserInfoRequest;
 import com.mmzb.custody.shbk.service.response.UserInformationResponse;
@@ -85,6 +87,8 @@ public class MailAction {
 	private ThreadService threadService;
 	@Resource(name = "wechatInfoService")
 	private WechatInfoService wechatInfoService;
+	@Autowired
+	private DEmployeeDao dEmployeeDao;
 	
 	//同步统计个人资产(定期债权)
 	@RequestMapping(value = "syncMemberBalance.htm",produces = "text/html; charset=utf-8")
@@ -352,6 +356,19 @@ public class MailAction {
     	request.setUserRole("INVESTOR");
     	UserInformationResponse response = custodyMemberService.queryEnterpriseInfo(request);
     	System.out.println("企业投资人的可用余额为:"+response.getAvailableAmount());
+    	return null;
+    }
+    
+  //账户余额邮件发送
+    @RequestMapping(value = "accountBalanceMailSend.htm",produces = "text/html; charset=utf-8")
+    public String accountBalanceMailSend() throws Exception{
+    	mailService.SendMail(MailTypeEnum.PLATFORM_REALTIME_DATA, new Date(), new Date());
+    	/*List<DEmployeeModel> financialManagers = dEmployeeDao.select();
+    	for(DEmployeeModel model : financialManagers){
+    		mailService.SendBalanceMail("liudongbo@88mmmoney.com", model.getName());
+    	}
+    	mailService.SendMail(MailTypeEnum.ACCOUNT_BALANCE, new Date(), new Date());*/
+    	
     	return null;
     }
     

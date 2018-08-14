@@ -16,4 +16,13 @@ public interface AchievementManagerFromProdDao {
 	public List<Map<String,String>> getValidMemberIdFromEnterpriseInfo();
 	
 	public List<Map<String,String>> getPhoneNumsByMemberID(List<Map<String,Object>> list);
+	
+	//获取最近投资信息
+	public List<Map<String,Object>> getLatestInvestInfo();
+	//获取最近充值信息
+	public List<Map<String,Object>> getLatestChargeInfo();
+	//获取最近提现信息
+	public List<Map<String,Object>> getLatestCashInfo();
+	//获取最近回款信息
+	public List<Map<String,Object>> getLatestRecoveryInfo();
 }

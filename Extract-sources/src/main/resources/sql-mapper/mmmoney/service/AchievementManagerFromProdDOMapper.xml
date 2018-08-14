@@ -394,5 +394,170 @@
 		#{model.memberId}
    	</foreach> ;
  </select>
+ 
+ <select id="getLatestInvestInfo" resultType="java.util.Map">
+ 	SELECT
+		t1.member_id memberId,
+		t1.CREATE_TIME investTime,
+		t1.AMOUNT investAmount
+	FROM
+		invest.t_bid_order t1
+	WHERE
+		EXISTS (
+			SELECT
+				BID_ORDER_NO
+			FROM
+				(
+					SELECT
+						max(BID_ORDER_NO) BID_ORDER_NO
+					FROM
+						invest.t_bid_order
+					WHERE
+						`STATUS` IN (
+							'BID_SUCCESS',
+							'PAY_SUCCESS',
+							'CURRENT_SUCCESS'
+						)
+					AND CREATE_TIME > date_sub(CURDATE(),interval 6 month)
+					GROUP BY
+						member_id
+				) a
+			WHERE
+				a.BID_ORDER_NO = t1.BID_ORDER_NO
+		)
+	ORDER BY
+		t1.CREATE_TIME DESC;
+ </select>
+ 
+ <select id="getLatestChargeInfo" resultType="java.util.Map">
+ 	SELECT
+		*
+	FROM
+		(
+			SELECT
+				*
+			FROM
+				(
+					(
+						SELECT
+							t1.memberid memberId,
+							t1.amount chargeAmount,
+							t1.gmt_create chargeTime
+						FROM
+							custody_shbk.t_recharge t1
+						LEFT JOIN custody_shbk.tr_custody_memberinfo b ON t1.platformuserno = b.platformUserNo
+						LEFT JOIN custody_shbk.t_enterprise_info tei ON t1.platformuserno = tei.platformUserNo
+						WHERE
+							t1.rechargestatus = 'SUCCESS'
+						AND (
+							b.userRole = 'INVESTOR'
+							OR tei.userRole = 'INVESTOR'
+						)
+						ORDER BY
+							t1.gmt_create
+					)
+					UNION ALL
+						(
+							SELECT
+								IFNULL(b.memberId, tei.memberId) memberId,
+								a.amount,
+								c.modified_time
+							FROM
+								custody_shbk.t_business_details a
+							LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.target_platform_user_no = b.platformUserNo
+							LEFT JOIN custody_shbk.t_enterprise_info tei ON a.target_platform_user_no = tei.platformUserNo
+							LEFT JOIN (
+								SELECT
+									request_no,
+									modified_time
+								FROM
+									custody_shbk.t_transaction_details
+								WHERE
+									`status` = 'PAY_SUCCESS'
+								AND trade_type = 'MARKETING'
+							) c ON a.request_no = c.request_no
+							WHERE
+								a.biz_type = 'ALTERNATIVE_RECHARGE'
+							AND c.modified_time IS NOT NULL
+							AND (
+								b.userRole = 'INVESTOR'
+								OR tei.userRole = 'INVESTOR'
+							)
+							ORDER BY
+								c.modified_time
+						)
+				) a
+			ORDER BY
+				a.memberId,
+				a.chargeTime DESC
+		) bb
+	GROUP BY
+		bb.memberId;
+ </select>
+ 
+ <select id="getLatestCashInfo" resultType="java.util.Map">
+ 	SELECT
+		t1.memberid memberId,
+		t1.gmt_create cashTime,
+		t1.amount cashAmount
+	FROM
+		custody_shbk.t_withdraw t1
+	LEFT JOIN custody_shbk.tr_custody_bankinfo t2 ON t1.platformUserNo = t2.platformUserNo
+	WHERE
+		t2.bindCardFlag = '2'
+	AND EXISTS (
+		SELECT
+			requestNo
+		FROM
+			(
+				SELECT
+					MAX(requestNo) requestNo
+				FROM
+					custody_shbk.t_withdraw
+				WHERE
+					withdrawstatus IN (
+						'ACCEPT',
+						'CONFIRMING',
+						'SUCCESS'
+					)
+				GROUP BY
+					memberid
+			) a
+		WHERE
+			a.requestNo = t1.requestNo
+	)
+	ORDER BY
+		t1.gmt_create DESC;
+ </select>
+ 
+ <select id="getLatestRecoveryInfo" resultType="java.util.Map">
+ 	SELECT
+		t1.member_id memberId,
+		t1.CREATE_TIME recoveryTime,
+		t1.AMOUNT recoveryAmount
+	FROM
+		invest.t_recovery_order_detail t1
+	WHERE
+		EXISTS (
+			SELECT
+				RECOVERY_ORDER_DETAIL_NO
+			FROM
+				(
+					SELECT
+						MAX(RECOVERY_ORDER_DETAIL_NO) orderNo
+					FROM
+						invest.t_recovery_order_detail
+					WHERE
+						`STATUS` = 'SUCCESS'
+					AND CREATE_TIME > date_sub(CURDATE(),interval 6 month)
+					GROUP BY
+						member_id
+				) a
+			WHERE
+				a.orderNo = t1.RECOVERY_ORDER_DETAIL_NO
+		)
+	ORDER BY
+		t1.CREATE_TIME DESC;
+ </select>
 	
 </mapper>

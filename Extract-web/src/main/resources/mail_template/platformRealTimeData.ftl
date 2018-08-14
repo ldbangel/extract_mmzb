@@ -55,22 +55,26 @@
 	<body>
 		<table width="100%" cellspacing="0">
 			<tr class="tr2">
-				<td width="14%">定期宝投资</th>
-				<td width="14%">定期宝复投</th>
-				<td width="14%">定期宝新增</th>
-				<td width="14%">债权投资</td>
-				<td width="14%">回款金额</td>
-				<td width="14%">未满标金额</td>
-				<td width="16%">用户专户余额</td>
+				<td width="12%">定期宝投资</th>
+				<td width="12%">定期宝复投</th>
+				<td width="12%">定期宝新增</th>
+				<td width="10%">债权投资</td>
+				<td width="10%">回款金额</td>
+				<td width="12%">未满标金额</td>
+				<td width="10%">提现总额</td>
+				<td width="10%">充值总额</td>
+				<td width="12%">用户专户余额</td>
 			</tr>
 			<tr>
-				<td width="14%">${regularInvestAmount}</th>
-				<td width="14%">${reInvestAmount}</th>
-				<td width="14%">${newInvestAmount}</th>
-				<td width="14%">${creditInvestAmount}</td>
-				<td width="14%">${recoveryAllAmount}</td>
-				<td width="14%">${paySuccessAmount}</td>
-				<td width="16%">${balanceAllInvestorAmount}</td>
+				<td width="12%">${regularInvestAmount}</th>
+				<td width="12%">${reInvestAmount}</th>
+				<td width="12%">${newInvestAmount}</th>
+				<td width="10%">${creditInvestAmount}</td>
+				<td width="10%">${recoveryAllAmount}</td>
+				<td width="12%">${paySuccessAmount}</td>
+				<td width="10%">${cashAmount}</td>
+				<td width="10%">${chargeAmount}</td>
+				<td width="12%">${balanceAllInvestorAmount}</td>
 			</tr>
 		</table>
 	</body>

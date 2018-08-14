@@ -487,7 +487,8 @@
 		FROM
 			kejinTest.d_charge t7
 		WHERE 1=1 
-			AND user_role = 'INVESTOR'
+			AND t7.user_role = 'INVESTOR'
+			AND t7.charge_status = 'SUCCESS'
 			<if test="beginTime!=null">
 				<![CDATA[ AND t7.payDate >= #{beginTime} ]]>
 			</if>

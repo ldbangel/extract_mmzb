@@ -110,17 +110,21 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 		}else{
 			resultMap.put("paySuccessAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
 		}
-		/*if(resultMap.get("balanceAllAmount") != null){
-			resultMap.put("balanceAllAmount", format3.format(((BigDecimal) resultMap.get("balanceAllAmount")).divide(new BigDecimal(10000)))+"万");
-		}else{
-			resultMap.put("balanceAllAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
-		}*/
 		resultMap.put("balanceAllInvestorAmount", format3.format(allInvestorAmount.divide(new BigDecimal(10000)))+"万");
-		//resultMap.put("balanceAllBorrowersAmount", format3.format(allBorrowersAmount.divide(new BigDecimal(10000)))+"万");
 		if(resultMap.get("regularInvestAmountOfMonth") != null){
 			resultMap.put("regularInvestAmountOfMonth", format3.format(((BigDecimal) resultMap.get("regularInvestAmountOfMonth")).divide(new BigDecimal(10000)))+"万");
 		}else{
 			resultMap.put("regularInvestAmountOfMonth", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
+		}
+		if(resultMap.get("cashAmount") != null){
+			resultMap.put("cashAmount", format3.format(((BigDecimal) resultMap.get("cashAmount")).divide(new BigDecimal(10000)))+"万");
+		}else{
+			resultMap.put("cashAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
+		}
+		if(resultMap.get("chargeAmount") != null){
+			resultMap.put("chargeAmount", format3.format(((BigDecimal) resultMap.get("chargeAmount")).divide(new BigDecimal(10000)))+"万");
+		}else{
+			resultMap.put("chargeAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
 		}
 		
 		//日期时间

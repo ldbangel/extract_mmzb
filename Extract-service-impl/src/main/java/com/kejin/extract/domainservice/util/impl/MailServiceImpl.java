@@ -1,6 +1,7 @@
 package com.kejin.extract.domainservice.util.impl;
 
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,18 +56,13 @@ import freemarker.template.TemplateException;
 public class MailServiceImpl implements MailService {
 	
 	private String MAIL_HOST = "smtp.exmail.qq.com";
-	
 	private String MAIL_PORT = "465";
-	
 	private String MAIL_SMTP_AUTH = "true";
-	
 	private String MAIL_TRANSPORT_PROTOCOL = "smtp";
-	
 	private String USER = "mamashuju@88mmmoney.com";
-	
 	private String PASSWORD = "UZtAaEvA3m6ScgDe";
-	
 	private String IS_SSL = "true";
+	private String mailAddressCC = "mmsj@88mmmoney.com";
 	
 	@Resource(name = "increasedInfoService")
     private OperationInfoService increasedInfoService;
@@ -117,8 +113,7 @@ public class MailServiceImpl implements MailService {
 		
 		BodyPart filebodyPart = generateMsgBody(mail,beginTime,endTime);
 		InternetAddress[] internetAddressTo = addressInfo(mail.getSendUsers());
-		//zhengyajun@88mmmoney.com,luyongting@88mmmoney.com,
-		InternetAddress[] internetAddressCC = addressInfo("liudongbo@88mmmoney.com");
+		InternetAddress[] internetAddressCC = addressInfo(mailAddressCC);
 		
 		// 创建邮件
 		Message message = mssd(session, internetAddressTo , filebodyPart, mail);
@@ -131,6 +126,73 @@ public class MailServiceImpl implements MailService {
 		ts.sendMessage(message, message.getAllRecipients());
 	
 		ts.close();
+	}
+	
+	@Override
+	public void SendBalanceMail(String mailAddressTo, String financialManager) throws Exception {
+		Properties prop = new Properties();
+		// 开启debug调试，以便在控制台查看
+		prop.setProperty("mail.debug", "false");
+		// 设置邮件服务器主机名
+		prop.setProperty("mail.host", MAIL_HOST);
+		prop.setProperty("mail.smtp.port", MAIL_PORT);
+		
+		// 发送服务器需要身份验证
+		prop.setProperty("mail.smtp.auth",MAIL_SMTP_AUTH);
+		// 发送邮件协议名称
+		prop.setProperty("mail.transport.protocol", MAIL_TRANSPORT_PROTOCOL);
+
+		// 开启SSL加密，否则会失败
+		MailSSLSocketFactory sf = new MailSSLSocketFactory();
+		sf.setTrustAllHosts(true);
+		prop.put("mail.smtp.ssl.enable", IS_SSL);
+		prop.put("mail.smtp.ssl.socketFactory", sf);
+
+		// 创建session
+		Session session = Session.getInstance(prop);
+		// 通过session得到transport对象
+		Transport ts = session.getTransport();
+		InternetAddress[] internetAddressTo = addressInfo(mailAddressTo);
+		InternetAddress[] internetAddressCC = addressInfo(mailAddressCC);
+		
+		/**
+		 * 创建邮件
+		 */
+		Message message = new MimeMessage(session);  
+		message.setFrom(new InternetAddress(USER));// 发件人  
+		message.setRecipients(Message.RecipientType.TO, internetAddressTo);
+		message.setRecipients(Message.RecipientType.CC, internetAddressCC);
+		message.setSubject("【妈妈钱包】账户余额");
+		// 发送日期
+		message.setSentDate(new Date());
+		MimeMultipart multipart = new MimeMultipart("mixed");
+		BodyPart contentPart = new MimeBodyPart();
+		contentPart.setText("客户经理，您好：\r\n         附件是截止"+DateFormatUtils.getCurrentHoursDate1()+"投资用户账号余额超过1000元客户的详细信息!\r\n");
+		multipart.addBodyPart(contentPart);
+		String affix = SysConstantsConfig.EXCEL_SAVE_PATH + "AccountBalance" + DateFormatUtils.getCurrentHoursDate() + financialManager + ".xls";
+		String affixName = "账户余额" +".xls";
+		File file = new File(affix);
+		if(file.exists()){
+			DataSource source = new FileDataSource(affix);
+			BodyPart attach = new MimeBodyPart();
+			attach.setDataHandler(new DataHandler(source));
+			// 添加附件的标题
+			// 这里很重要，通过下面的Base64编码的转换可以保证你的中文附件标题名在发送时不会变成乱码
+			attach.setFileName(MimeUtility.encodeText(affixName));
+			multipart.addBodyPart(attach);
+			message.setContent(multipart); //设置邮件内容对象  
+			message.saveChanges();
+			
+			// 连接邮件服务器：邮箱类型，帐号，授权码代替密码（更安全）
+			ts.connect(MAIL_HOST, USER, PASSWORD);
+			
+			// 发送邮件
+			ts.sendMessage(message, message.getAllRecipients());
+			
+			ts.close();
+		}else{
+			return;
+		}
 	}
 	
 	public InternetAddress[] addressInfo(String info) throws AddressException{

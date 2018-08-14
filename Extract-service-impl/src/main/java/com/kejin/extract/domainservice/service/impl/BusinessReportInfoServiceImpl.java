@@ -237,7 +237,7 @@ public class BusinessReportInfoServiceImpl implements BusinessReportInfoService 
 		List<Map<String,Object>> balanceList = achievementManagerFromProdDao
 				.getAccountBalanceInfo(oneDayAgo.getTime(), twoDayAgo.getTime(), threeDayAgo.getTime());
 		try {
-			Excel2AccountBalanceUtil.excelUtil(balanceList);
+			Excel2AccountBalanceUtil.excelUtil(balanceList,"");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

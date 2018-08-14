@@ -12,6 +12,7 @@ public class DEmployeeModel {
 	private String duty;
 	private Integer status;
 	private String personType;
+	private String email;
 	
 	public String getMemberId() {
 		return memberId;
@@ -73,5 +74,10 @@ public class DEmployeeModel {
 	public void setPersonType(String personType) {
 		this.personType = personType;
 	}
-	
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
 }

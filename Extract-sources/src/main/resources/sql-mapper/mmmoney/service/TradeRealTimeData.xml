@@ -154,6 +154,99 @@
 			<![CDATA[ AND a.CREATE_TIME < #{endTime} ]]>
 		</if>
 	) recoveryAllAmount,
+	(
+		SELECT
+			SUM(AMOUNT)
+		FROM
+			invest.t_bid_order
+		WHERE
+			`STATUS` = 'PAY_SUCCESS'
+	) paySuccessAmount,
+	(
+		SELECT
+			sum(tw.amount)
+		FROM
+			custody_shbk.t_withdraw tw
+		LEFT JOIN custody_shbk.tr_custody_bankinfo t2 ON tw.platformUserNo = t2.platformUserNo
+		LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON tw.platformUserNo = tcm.platformUserNo
+		AND tcm.userRole = 'INVESTOR'
+		LEFT JOIN custody_shbk.t_enterprise_info tei ON tw.platformUserNo = tei.platformUserNo
+		AND tei.userRole = 'INVESTOR'
+		WHERE
+			tw.withdrawstatus IN (
+				'SUCCESS',
+				'CONFIRMING',
+				'ACCEPT'
+			)
+		<if test="beginTime!=null">
+			<![CDATA[ AND tw.gmt_create >= #{beginTime} ]]>
+		</if>
+		<if test="endTime!=null">
+			<![CDATA[ AND tw.gmt_create < #{endTime} ]]>
+		</if>
+		AND t2.bindCardFlag = '2'
+	) cashAmount,
+	(
+		SELECT
+			sum(a.amount)
+		FROM
+			(
+				(
+					SELECT
+						a.amount
+					FROM
+						custody_shbk.t_business_details a
+					LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.target_platform_user_no = b.platformUserNo
+					AND b.userRole = 'INVESTOR'
+					LEFT JOIN custody_shbk.t_enterprise_info tei ON a.target_platform_user_no = tei.platformUserNo
+					AND tei.userRole = 'INVESTOR'
+					LEFT JOIN (
+						SELECT
+							request_no,
+							modified_time
+						FROM
+							custody_shbk.t_transaction_details
+						WHERE
+							`status` = 'PAY_SUCCESS'
+						AND trade_type = 'MARKETING'
+						<if test="beginTime!=null">
+							<![CDATA[ AND modified_time >= #{beginTime} ]]>
+						</if>
+						<if test="endTime!=null">
+							<![CDATA[ AND modified_time < #{endTime} ]]>
+						</if>
+					) c ON a.request_no = c.request_no
+					WHERE
+						a.biz_type = 'ALTERNATIVE_RECHARGE'
+					AND c.modified_time IS NOT NULL
+				)
+				UNION ALL
+					(
+						SELECT
+							t1.amount
+						FROM
+							custody_shbk.t_recharge t1
+						LEFT JOIN custody_shbk.tr_custody_memberinfo tcm ON t1.platformuserno = tcm.platformUserNo
+						AND tcm.userRole = 'INVESTOR'
+						LEFT JOIN custody_shbk.t_enterprise_info tei ON t1.platformuserno = tei.platformUserNo
+						AND tei.userRole = 'INVESTOR'
+						WHERE
+							rechargestatus IN ('PENDDING', 'SUCCESS')
+						<if test="beginTime!=null">
+							<![CDATA[ AND t1.gmt_modify >= #{beginTime} ]]>
+						</if>
+						<if test="endTime!=null">
+							<![CDATA[ AND t1.gmt_modify < #{endTime} ]]>
+						</if>
+						AND (
+							tcm.isImportUserActivate = 'true'
+							OR tei.isImportUserActivate = 'true'
+						)
+						ORDER BY
+							t1.gmt_create
+					)
+			) a
+	) chargeAmount;
 	<!-- (
 		SELECT
 			count(*) '满标项目数'
@@ -181,7 +274,7 @@
 		<if test="endTime!=null">
 			<![CDATA[ AND a.TRADE_DATE < #{endTime} ]]>
 		</if>
-	) bidSuccessAmount, -->
+	) bidSuccessAmount, 
 	(
 		SELECT
 			SUM(AMOUNT)
@@ -189,7 +282,7 @@
 			invest.t_bid_order
 		WHERE
 			`STATUS` = 'PAY_SUCCESS'
-	) paySuccessAmount;
+	) paySuccessAmount; -->
 	<!-- (
 		SELECT
 			sum(a.AMOUNT)
