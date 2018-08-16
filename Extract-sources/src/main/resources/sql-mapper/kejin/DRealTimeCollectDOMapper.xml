@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DRealTimeCollectDao">
+    
+  <insert id="insertRealTimeDataRecord" parameterType="java.util.Map" >
+	    INSERT INTO `d_realtime_collect` (
+	    	settle_date,
+			regular_invest_amount,
+			regular_reinvest_amount,
+			new_regular_invest,
+			credit_amount,
+			regular_recovery_amount,
+			pay_success_amount,
+			cash_amount,
+			charge_amount,
+			all_balance_amount,
+			gmt_create,
+			gmt_modified
+		)
+		VALUES
+		(    
+			DATE_FORMAT(now(), '%Y%m%d%H'),
+		    #{regularInvestAmount, jdbcType=DECIMAL},
+			#{reInvestAmount, jdbcType=DECIMAL},
+			#{newInvestAmount, jdbcType=DECIMAL},
+		    #{creditInvestAmount, jdbcType=DECIMAL},
+		    #{recoveryAllAmount, jdbcType=DECIMAL},
+		    #{paySuccessAmount, jdbcType=DECIMAL},
+		    #{cashAmount, jdbcType=DECIMAL},
+		    #{chargeAmount, jdbcType=DECIMAL},
+		    #{allInvestorAmount, jdbcType=DECIMAL},
+		    now(),
+		    now()
+		)
+  </insert> 
+	
+</mapper>

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.kejin.extract.domainservice.service.ThreadService;
 import com.kejin.extract.domainservice.service.TradeRealTimeDataService;
+import com.kejin.extract.kejin.process.dao.DRealTimeCollectDao;
 import com.kejin.extract.mmmoney.service.dao.TradeRealTimeDataDao;
 
 /**
@@ -31,6 +32,8 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 	private TradeRealTimeDataDao tradeRealTimeDataDao;
 	@Resource(name = "threadService")
 	private ThreadService threadService;
+	@Autowired
+	private DRealTimeCollectDao dRealTimeCollectDao;
 
 	@Override
 	public Map<String, Object> getTradeRealTimeData() {
@@ -62,6 +65,7 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 				end.getTime(), thisMonthBegin.getTime(), thisMonthEnd.getTime());
 		//获取所有投资者的用户余额
 		BigDecimal allInvestorAmount = threadService.exportMemberBalanceExcel();
+		resultMap.put("allInvestorAmount", allInvestorAmount);
 		logger.info("用户专户余额为:"+allInvestorAmount);
 		//BigDecimal allBorrowersAmount = threadService.getAllBorrowersAmount();
 		
@@ -75,6 +79,13 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 		}else if(resultMap.get("regularInvestAmount") == null && resultMap.get("newInvestAmount") != null){
 			reInvestAmount = (BigDecimal) resultMap.get("newInvestAmount");
 		}
+		
+		resultMap.put("reInvestAmount", reInvestAmount);
+		//实时数据入库
+		if(resultMap!=null && resultMap.size()>0){
+			dRealTimeCollectDao.insertRealTimeDataRecord(resultMap);
+		}
+		
 		if(resultMap.get("regularInvestAmount") != null){
 			resultMap.put("regularInvestAmount", format3.format(((BigDecimal) resultMap.get("regularInvestAmount")).divide(new BigDecimal(10000)))+"万");
 		}else{

@@ -21,6 +21,7 @@ import com.kejin.extract.domainservice.common.Excel2AccountBalanceUtil;
 import com.kejin.extract.domainservice.service.ThreadService;
 import com.kejin.extract.entity.kejinTest.DEmployeeModel;
 import com.kejin.extract.integration.custody.CustodyMemberService;
+import com.kejin.extract.kejin.process.dao.DAccountBalanceDao;
 import com.kejin.extract.kejin.process.dao.DEmployeeDao;
 import com.kejin.extract.kejin.process.dao.DMemberBalanceDao;
 import com.kejin.extract.kejin.process.dao.DUserDao;
@@ -49,6 +50,8 @@ public class ThreadServiceImpl implements ThreadService {
 	private DUserDao dUserDao;
 	@Autowired
 	private DEmployeeDao dEmployeeDao;
+	@Autowired
+	private DAccountBalanceDao dAccountBalanceDao;
 	
 	@Override
 	public BigDecimal exportMemberBalanceExcel() {
@@ -97,6 +100,10 @@ public class ThreadServiceImpl implements ThreadService {
 		}
 		long endTime3 = System.currentTimeMillis();
 		logger.info("转换时间为："+(endTime3-endTime2));
+		
+		if(result!=null && result.size()>0){
+			dAccountBalanceDao.insertBalanceRecord(result);
+		}
 		
 		//获取前一天账户余额
 		List<Map<String,Object>> balanceList = dMemberBalanceDao.selectMemberBalanceByMemberId(result);

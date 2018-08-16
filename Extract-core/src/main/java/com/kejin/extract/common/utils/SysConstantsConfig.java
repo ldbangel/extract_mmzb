@@ -39,6 +39,7 @@ public class SysConstantsConfig {
 	public static String PLATFORM_REALTIME_DATA;
 	public static String PARTTIME_FINANCIER_DAY;
 	public static String WECHAT_STATISTICS_DATA;
+	public static String MAIL_ADDRESS_CC;
 	
 	 
 	
@@ -87,5 +88,6 @@ public class SysConstantsConfig {
 		PLATFORM_REALTIME_DATA = Pro_Sys_FilePath_Config.getProperty("PLATFORM_REALTIME_DATA");
 		PARTTIME_FINANCIER_DAY = Pro_Sys_FilePath_Config.getProperty("PARTTIME_FINANCIER_DAY");
 		WECHAT_STATISTICS_DATA = Pro_Sys_FilePath_Config.getProperty("WECHAT_STATISTICS_DATA");
+		MAIL_ADDRESS_CC = Pro_Sys_FilePath_Config.getProperty("MAIL_ADDRESS_CC");
 	}
 }

@@ -62,7 +62,6 @@ public class MailServiceImpl implements MailService {
 	private String USER = "mamashuju@88mmmoney.com";
 	private String PASSWORD = "UZtAaEvA3m6ScgDe";
 	private String IS_SSL = "true";
-	private String mailAddressCC = "mmsj@88mmmoney.com";
 	
 	@Resource(name = "increasedInfoService")
     private OperationInfoService increasedInfoService;
@@ -113,7 +112,7 @@ public class MailServiceImpl implements MailService {
 		
 		BodyPart filebodyPart = generateMsgBody(mail,beginTime,endTime);
 		InternetAddress[] internetAddressTo = addressInfo(mail.getSendUsers());
-		InternetAddress[] internetAddressCC = addressInfo(mailAddressCC);
+		InternetAddress[] internetAddressCC = addressInfo(SysConstantsConfig.MAIL_ADDRESS_CC);
 		
 		// 创建邮件
 		Message message = mssd(session, internetAddressTo , filebodyPart, mail);
@@ -153,7 +152,7 @@ public class MailServiceImpl implements MailService {
 		// 通过session得到transport对象
 		Transport ts = session.getTransport();
 		InternetAddress[] internetAddressTo = addressInfo(mailAddressTo);
-		InternetAddress[] internetAddressCC = addressInfo(mailAddressCC);
+		InternetAddress[] internetAddressCC = addressInfo(SysConstantsConfig.MAIL_ADDRESS_CC);
 		
 		/**
 		 * 创建邮件

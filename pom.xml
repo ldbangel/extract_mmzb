@@ -41,12 +41,12 @@
   			<exception.file.address>../logs/kejinExtractError.log</exception.file.address>
 			
 			<!-- <config.root>D:\haoyu\JavaProjects\extract\</config.root> -->
-			<excel_save_path>D:\Bruce\</excel_save_path>
+			<excel_save_path>D:/Bruce/</excel_save_path>
 			<quartz.switch>false</quartz.switch>
 			
 			<!-- screen shot -->
-			<phantomjs_path>D:\phantomjs\bin\phantomjs.exe</phantomjs_path>
-			<script_path>D:\mamaImageHandle\js\</script_path>
+			<phantomjs_path>D:/phantomjs/bin/phantomjs.exe</phantomjs_path>
+			<script_path>D:/mamaImageHandle/js/</script_path>
 			<target_url>file:///D:/mamaImageHandle/html/</target_url>
 			<image_out_path>D:/mamaImageHandle/image/</image_out_path>
 			<pdf_out_path>D:/mamaImageHandle/pdf/</pdf_out_path>
