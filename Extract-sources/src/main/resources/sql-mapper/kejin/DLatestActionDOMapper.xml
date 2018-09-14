@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.kejin.process.dao.DLatestActionDao">
+
+  <select id="selectLatestActionRecord" parameterType="java.util.List" resultType="java.util.Map">
+  	SELECT
+		memberId,
+		latest_cash_amount latestCashAmount,
+		latest_cash_time latestCashTime,
+		latest_charge_amount latestChargeAmount,
+		latest_charge_time latestChargeTime,
+		latest_invest_amount latestInvestAmount,
+		latest_invest_time latestInvestTime,
+		latest_recovery_amount latestRecoveryAmount,
+		latest_recovery_time latestRecoveryTime
+	FROM
+		kejinTest.`d_latest_action`
+	WHERE
+		memberId IN 
+	<foreach collection="list" index="index" item="item" open="(" close=")" separator="," >
+		#{item.memberId}
+	</foreach>
+  </select>
+
+  <select id="selectCustomerRecords" parameterType="java.util.Set" resultType="java.lang.String">
+  	SELECT
+		memberId
+	FROM
+		kejinTest.d_latest_action
+	WHERE 
+		memberId IN 
+	<foreach collection="set" index="index" item="item" open="(" close=")" separator="," >
+		#{item}
+	</foreach>
+  </select>
+  
+  <insert id="insertLatestActionRecord" parameterType="java.util.List">
+	    INSERT INTO kejinTest.d_latest_action (
+	    	memberId,
+			latest_charge_amount,
+			latest_charge_time,
+			latest_cash_amount,
+			latest_cash_time,
+			latest_invest_amount,
+			latest_invest_time,
+			latest_recovery_amount,
+			latest_recovery_time,
+			gmt_create,
+			gmt_modified
+		)
+		VALUES
+		<foreach collection="list" item="model"  separator="," >
+			(    
+			    #{model.memberId, jdbcType=VARCHAR},
+				#{model.latestChargeAmount, jdbcType=DECIMAL},
+				#{model.latestChargeTime, jdbcType=TIMESTAMP},
+			    #{model.latestCashAmount, jdbcType=DECIMAL},
+			    #{model.latestCashTime, jdbcType=TIMESTAMP},
+			    #{model.latestInvestAmount, jdbcType=DECIMAL},
+				#{model.latestInvestTime, jdbcType=TIMESTAMP},
+			    #{model.latestRecoveryAmount, jdbcType=DECIMAL},
+			    #{model.latestRecoveryTime, jdbcType=TIMESTAMP},
+			    now(),
+			    now()
+			)
+		</foreach>  
+  </insert>
+  
+  <update id="updateLatestActionRecord" parameterType="java.util.List">
+  	<foreach collection="list" item="model" index="index" open="" close="" separator=";"> 
+	  	UPDATE kejinTest.d_latest_action
+		SET
+			<if test="model.latestChargeAmount != null">
+				latest_charge_amount = #{model.latestChargeAmount, jdbcType=DECIMAL},
+			</if>
+			<if test="model.latestChargeTime != null">
+				latest_charge_time = #{model.latestChargeTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="model.latestCashAmount != null">
+				latest_cash_amount = #{model.latestCashAmount, jdbcType=DECIMAL},
+			</if>
+			<if test="model.latestCashTime != null">
+				latest_cash_time = #{model.latestCashTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="model.latestInvestAmount != null">
+				latest_invest_amount = #{model.latestInvestAmount, jdbcType=DECIMAL},
+			</if>
+			<if test="model.latestInvestTime != null">
+				latest_invest_time = #{model.latestInvestTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="model.latestRecoveryAmount != null">
+				latest_recovery_amount = #{model.latestRecoveryAmount, jdbcType=DECIMAL},
+			</if>
+			<if test="model.latestRecoveryTime != null">
+				latest_recovery_time = #{model.latestRecoveryTime, jdbcType=TIMESTAMP},
+			</if>
+			gmt_modified = now()
+		WHERE memberId = #{model.memberId, jdbcType=VARCHAR}
+	</foreach>
+  </update> 
+	
+</mapper>

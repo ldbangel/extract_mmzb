@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kejin.extract.mmmoney.reader.dao.DLatestActionReaderDao">
+
+    <select id="readLatestInvest"  resultType="com.kejin.extract.entity.kejinTest.DLatestActionModel">
+      	SELECT
+			a.MEMBER_ID memberId,
+			a.AMOUNT latestInvestAmount,
+			a.CREATE_TIME latestInvestTime
+		FROM
+			(
+				SELECT
+					MEMBER_ID,
+					AMOUNT,
+					CREATE_TIME
+				FROM
+					invest.t_bid_order
+				WHERE
+					`STATUS` = 'BID_SUCCESS'
+				AND SUBJECT_TYPE IN ('CREDIT', 'SUBJECT')
+				<if test="beginTime!=null">
+					<![CDATA[ AND MODIFIED_TIME >= #{beginTime} ]]>
+				</if>
+				<if test="endTime!=null">	
+					<![CDATA[ AND MODIFIED_TIME < #{endTime} ]]>
+				</if>
+				ORDER BY
+					CREATE_TIME DESC
+			) a
+		GROUP BY
+			a.MEMBER_ID
+  	</select>
+  	
+  	<select id="readLatestRecovery"  resultType="com.kejin.extract.entity.kejinTest.DLatestActionModel">
+      	SELECT
+			a.MEMBER_ID memberId,
+			a.AMOUNT latestRecoveryAmount,
+			a.CREATE_TIME latestRecoveryTime
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						SELECT
+							MEMBER_ID,
+							AMOUNT,
+							CREATE_TIME
+						FROM
+							invest.t_recovery_order_detail
+						WHERE
+							`STATUS` = 'SUCCESS'
+						<if test="beginTime!=null">
+							<![CDATA[ AND CREATE_TIME >= #{beginTime} ]]>
+						</if>
+						<if test="endTime!=null">	
+							<![CDATA[ AND CREATE_TIME < #{endTime} ]]>
+						</if>
+						UNION
+							SELECT
+								b.ASSIGNMENT_MEMBER_ID MEMBER_ID,
+								a.AMOUNT AMOUNT,
+								a.CREATE_TIME CREATE_TIME
+							FROM
+								invest.t_bid_order a
+							LEFT JOIN invest.t_credit_assignment b ON a.SUBJECT_NO = b.CREDIT_ASSIGNMENT_ID
+							WHERE
+								a.`STATUS` = 'BID_SUCCESS'
+							AND a.SUBJECT_TYPE = 'CREDIT'
+							<if test="beginTime!=null">
+								<![CDATA[ AND a.CREATE_TIME >= #{beginTime} ]]>
+							</if>
+							<if test="endTime!=null">	
+								<![CDATA[ AND a.CREATE_TIME < #{endTime} ]]>
+							</if>
+					) t1
+				ORDER BY
+					t1.CREATE_TIME DESC
+			) a
+		GROUP BY
+			a.MEMBER_ID
+  	</select>
+  	
+  	<select id="readLatestCharge"  resultType="com.kejin.extract.entity.kejinTest.DLatestActionModel">
+      	SELECT
+			bb.memberId,
+			bb.chargeAmount latestChargeAmount,
+			bb.chargeTime latestChargeTime
+		FROM
+			(
+				SELECT
+					*
+				FROM
+					(
+						(
+							SELECT
+								t1.memberid memberId,
+								t1.amount chargeAmount,
+								t1.gmt_create chargeTime
+							FROM
+								custody_shbk.t_recharge t1
+							LEFT JOIN custody_shbk.tr_custody_memberinfo b ON t1.platformuserno = b.platformUserNo
+							LEFT JOIN custody_shbk.t_enterprise_info tei ON t1.platformuserno = tei.platformUserNo
+							WHERE
+								t1.rechargestatus = 'SUCCESS'
+							AND (
+								b.userRole = 'INVESTOR'
+								OR tei.userRole = 'INVESTOR'
+							)
+							<if test="beginTime!=null">
+								<![CDATA[ AND t1.gmt_create >= #{beginTime} ]]>
+							</if>
+							<if test="endTime!=null">	
+								<![CDATA[ AND t1.gmt_create < #{endTime} ]]>
+							</if>
+							ORDER BY
+								t1.gmt_create
+						)
+						UNION ALL
+							(
+								SELECT
+									IFNULL(b.memberId, tei.memberId) memberId,
+									a.amount ,
+									c.modified_time
+								FROM
+									custody_shbk.t_business_details a
+								LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.target_platform_user_no = b.platformUserNo
+								LEFT JOIN custody_shbk.t_enterprise_info tei ON a.target_platform_user_no = tei.platformUserNo
+								LEFT JOIN (
+									SELECT
+										request_no,
+										modified_time
+									FROM
+										custody_shbk.t_transaction_details
+									WHERE
+										`status` = 'PAY_SUCCESS'
+									AND trade_type = 'MARKETING'
+								) c ON a.request_no = c.request_no
+								WHERE
+									a.biz_type = 'ALTERNATIVE_RECHARGE'
+								<if test="beginTime!=null">
+									<![CDATA[ AND c.modified_time >= #{beginTime} ]]>
+								</if>
+								<if test="endTime!=null">	
+									<![CDATA[ AND c.modified_time < #{endTime} ]]>
+								</if>
+								AND (
+									b.userRole = 'INVESTOR'
+									OR tei.userRole = 'INVESTOR'
+								)
+								ORDER BY
+									c.modified_time
+							)
+					) a
+				ORDER BY
+					a.memberId,
+					a.chargeTime DESC
+			) bb
+		GROUP BY
+			bb.memberId
+  	</select>
+  	
+  	<select id="readLatestCash"  resultType="com.kejin.extract.entity.kejinTest.DLatestActionModel">
+      	SELECT
+			t1.memberid memberId,
+			t1.amount latestCashAmount,
+			t1.gmt_create latestCashTime
+		FROM
+			custody_shbk.t_withdraw t1
+		LEFT JOIN custody_shbk.tr_custody_bankinfo t2 ON t1.platformUserNo = t2.platformUserNo
+		WHERE
+			t2.bindCardFlag = '2'
+		AND EXISTS (
+			SELECT
+				requestNo
+			FROM
+				(
+					SELECT
+						MAX(requestNo) requestNo
+					FROM
+						custody_shbk.t_withdraw
+					WHERE
+						withdrawstatus = 'SUCCESS'
+					<if test="beginTime!=null">
+						<![CDATA[ AND gmt_modify >= #{beginTime} ]]>
+					</if>
+					<if test="endTime!=null">	
+						<![CDATA[ AND gmt_modify < #{endTime} ]]>
+					</if>
+					GROUP BY
+						memberid
+				) a
+			WHERE
+				a.requestNo = t1.requestNo
+		)
+		ORDER BY
+			t1.gmt_create DESC
+  	</select>
+  	
+</mapper>
