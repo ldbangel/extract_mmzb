@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.kejin.extract.kejin.process.dao.DRealTimeCollectDao">
+
+  <select id="selectLatestRecordCount" resultType="java.lang.Integer">
+  	SELECT
+		count(1)
+	FROM
+		d_realtime_collect
+	WHERE
+		gmt_create > SUBDATE(now(), INTERVAL 30 MINUTE);
+  </select>
     
   <insert id="insertRealTimeDataRecord" parameterType="java.util.Map" >
 	    INSERT INTO `d_realtime_collect` (

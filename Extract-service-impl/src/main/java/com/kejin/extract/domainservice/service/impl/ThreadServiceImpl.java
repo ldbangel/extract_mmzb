@@ -23,9 +23,11 @@ import com.kejin.extract.entity.kejinTest.DEmployeeModel;
 import com.kejin.extract.integration.custody.CustodyMemberService;
 import com.kejin.extract.kejin.process.dao.DAccountBalanceDao;
 import com.kejin.extract.kejin.process.dao.DEmployeeDao;
+import com.kejin.extract.kejin.process.dao.DLatestActionDao;
 import com.kejin.extract.kejin.process.dao.DMemberBalanceDao;
 import com.kejin.extract.kejin.process.dao.DUserDao;
 import com.kejin.extract.mmmoney.service.dao.AchievementManagerFromProdDao;
+import com.kejin.extract.mmmoney.service.dao.TradeRealTimeDataDao;
 import com.mmzb.custody.shbk.service.request.EnterpriseInfoRequest;
 import com.mmzb.custody.shbk.service.request.QueryUserInfoRequest;
 import com.mmzb.custody.shbk.service.response.EnterpriseInfoResponse;
@@ -52,7 +54,15 @@ public class ThreadServiceImpl implements ThreadService {
 	private DEmployeeDao dEmployeeDao;
 	@Autowired
 	private DAccountBalanceDao dAccountBalanceDao;
+	@Autowired
+	private TradeRealTimeDataDao tradeRealTimeDataDao;
+	@Autowired
+	private DLatestActionDao dLatestActionDao;
 	
+	/**
+	 * 导出余额excel，调取新网银行接口查询(原来使用)
+	 * @return
+	 */
 	@Override
 	public BigDecimal exportMemberBalanceExcel() {
 		List<UserInformationResponse> userResponseList = getMemberInfoFromCustody();
@@ -155,6 +165,87 @@ public class ThreadServiceImpl implements ThreadService {
 		long endTime4 = System.currentTimeMillis();
 		logger.info("Excel导出时间为："+(endTime4-endTime3));
 		return allAmount;
+	}
+	
+	@Override
+	public void exportMemberBalanceExcel2() {
+		List<Map<String,Object>> balanceResult = tradeRealTimeDataDao.selectAccountBalance();
+		List<Map<String,String>> phoneList = achievementManagerFromProdDao.getPhoneNumsByMemberID(balanceResult);
+		
+		for(Map<String,Object> map : balanceResult){
+			for(Map<String, String> model : phoneList){
+				if(map.get("memberId")==null){
+					break;
+				}else{
+					if(map.get("memberId").equals(model.get("memberId"))){
+						map.put("phoneNum", model.get("phoneNum"));
+					}
+				}
+			}
+		}
+		
+		//获取前一天账户余额
+		List<Map<String,Object>> yestodayBalanceList = dMemberBalanceDao.selectMemberBalanceByMemberId(balanceResult);
+		for(Map<String,Object> map : balanceResult){
+			for(Map<String,Object> balance : yestodayBalanceList){
+				if(map.get("memberId").equals(balance.get("memberId"))){
+					map.put("yestodayBalance", balance.get("balance"));
+				}
+			}
+		}
+		
+		//查询最近操作记录
+		List<Map<String,Object>> latestAcitonList = dLatestActionDao.selectLatestActionRecord(balanceResult);
+		for(Map<String,Object> map : balanceResult){
+			for(Map<String,Object> actionMap : latestAcitonList){
+				if(map.get("memberId").equals(actionMap.get("memberId"))){
+					map.put("latestCashAmount", actionMap.get("latestCashAmount"));
+					map.put("latestCashTime", actionMap.get("latestCashTime"));
+					map.put("latestChargeAmount", actionMap.get("latestChargeAmount"));
+					map.put("latestChargeTime", actionMap.get("latestChargeTime"));
+					map.put("latestInvestAmount", actionMap.get("latestInvestAmount"));
+					map.put("latestInvestTime", actionMap.get("latestInvestTime"));
+					map.put("latestRecoveryAmount", actionMap.get("latestRecoveryAmount"));
+					map.put("latestRecoveryTime", actionMap.get("latestRecoveryTime"));
+				}
+			}
+		}
+		
+		/**
+		 * 按客户经理拆分
+		 */
+		List<DEmployeeModel> employeeList= dEmployeeDao.select();
+		StringBuffer names = new StringBuffer();
+		for(DEmployeeModel employee : employeeList){
+			names = names.append(employee.getName()).append(";");
+		}
+		
+		for(DEmployeeModel employee : employeeList){
+			List<Map<String,Object>> resultList = new ArrayList<Map<String,Object>>();
+			for(Map<String,Object> map : balanceResult){
+				if(map.get("financialManager")!=null
+						&& !"".equals(map.get("financialManager"))
+						&& (names.toString()).contains((String) map.get("financialManager"))){
+					if(employee.getName().equals(map.get("financialManager"))){
+						resultList.add(map);
+					}
+				}
+			}
+			if(resultList.size() > 0){
+				try {
+					Excel2AccountBalanceUtil.excelUtil(resultList,employee.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		try {
+			Excel2AccountBalanceUtil.excelUtil(balanceResult,"");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override
@@ -308,14 +399,14 @@ public class ThreadServiceImpl implements ThreadService {
 		int arrSize = list.size()%size==0?list.size()/size:list.size()/size+1; 
 		for(int i=0 ; i<arrSize ; i++) {
 			if(list.size()%size == 0){
-				List<Map<String,String>> childList = list.subList(i*100, (i+1)*100);
+				List<Map<String,String>> childList = list.subList(i*size, (i+1)*size);
 				resultList.add(childList);
 			}else{
 				if(i != arrSize-1){
-					List<Map<String,String>> childList = list.subList(i*100, (i+1)*100);
+					List<Map<String,String>> childList = list.subList(i*size, (i+1)*size);
 					resultList.add(childList);
 				}else{
-					List<Map<String,String>> childList = list.subList(i*100, i*100+list.size()%size-1);
+					List<Map<String,String>> childList = list.subList(i*size, i*size+list.size()%size-1);
 					resultList.add(childList);
 				}
 			}

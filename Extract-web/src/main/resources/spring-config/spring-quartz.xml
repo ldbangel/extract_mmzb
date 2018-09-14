@@ -34,10 +34,12 @@
                 <ref bean="extractDReInvestAndNewDataDaemonTrigger"/>
                 <ref bean="extractDLoanDataDaemonTrigger"/>
                 <ref bean="extractDChannelDataDaemonTrigger"/>
+                <ref bean="extractDLatestActionDataDaemonTrigger"/>
                 <ref bean="extractDMemberBalanceDataDaemonTrigger"/>
                 <ref bean="extractDUpdateSettleBalanceDaemonTrigger"/>
                 <!-- sync dingding address list -->
                 <ref bean="syncDingDingAddressListDaemonTrigger" />
+                <ref bean="saveOperationCollectDailyDataDaemonTrigger" />
                 
                 <!-- <ref bean="extractDNewInvestDataDaemonTrigger"/> -->
                 <!-- remove empty member balance notes -->
@@ -54,7 +56,7 @@
                 <ref bean="accountBalanceDayMailDaemonTrigger" />
                 <ref bean="customerDistributeDayMailDaemonTrigger" />
                 <ref bean="platformDayMailDaemonTrigger" />
-                <!-- <ref bean="tradeRealTimeDataDayMailDaemonTrigger" /> -->
+                <ref bean="tradeRealTimeDataDayMailDaemonTrigger" />
                 <ref bean="partTimeFinancierDayMailDaemonTrigger" />
                 <ref bean="operationWeekMailDaemonTrigger" />
                 <ref bean="achievementWeekMailDaemonTrigger" />
@@ -307,6 +309,23 @@
         </property>
     </bean>
     <bean id="extractDLoanDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDLoanDataDaemon"/>
+    
+    <!-- d_latest_action 最近操作表-->
+    <bean id="extractDLatestActionDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="extractDLatestActionDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${syncBaseData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="extractDLatestActionDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="extractDLatestActionDataDaemon" />
+        </property>
+    </bean>
+    <bean id="extractDLatestActionDataDaemon" class="com.kejin.extract.time.task.daemon.ExtractDLatestActionDataDaemon"/>
     
     <!-- d_channel 渠道表-->
     <bean id="extractDChannelDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
@@ -774,4 +793,22 @@
         </property>
     </bean>   
     <bean id="syncDingDingAddressListDaemon" class="com.kejin.extract.time.task.daemon.SyncDingDingAddressListDaemon"/>
+    
+    <!-- 保存前一天的运营日报数据 -->
+    <bean id="saveOperationCollectDailyDataDaemonTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="saveOperationCollectDailyDataDaemonTriggerTaskJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <value>${saveOperationCollectData.trigger.cron}</value>
+        </property>
+    </bean>
+    <bean id="saveOperationCollectDailyDataDaemonTriggerTaskJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"  parent="parentTaskJobDetail">
+        <property name="targetObject">
+            <ref bean="saveOperationCollectDailyDataDaemon" />
+        </property>
+    </bean>   
+    <bean id="saveOperationCollectDailyDataDaemon" class="com.kejin.extract.time.task.daemon.SaveOperationCollectDailyDataDaemon"/>
+    
 </beans>

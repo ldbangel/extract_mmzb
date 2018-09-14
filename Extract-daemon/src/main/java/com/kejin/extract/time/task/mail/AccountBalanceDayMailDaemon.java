@@ -14,6 +14,7 @@ import com.kejin.extract.domainservice.service.ThreadService;
 import com.kejin.extract.domainservice.util.MailService;
 import com.kejin.extract.entity.kejinTest.DEmployeeModel;
 import com.kejin.extract.kejin.process.dao.DEmployeeDao;
+import com.kejin.extract.kejin.process.dao.DRealTimeCollectDao;
 import com.kejin.extract.time.task.common.DaemonTask;
 
 public class AccountBalanceDayMailDaemon implements DaemonTask {
@@ -28,12 +29,9 @@ public class AccountBalanceDayMailDaemon implements DaemonTask {
 	
 	@Override
 	public void execute() {
+		//生成账户余额excel
+		threadService.exportMemberBalanceExcel2();
 		try {
-			logger.info("-------平台交易实时数据邮件发送-------");
-			mailService.SendMail(MailTypeEnum.PLATFORM_REALTIME_DATA, new Date(), new Date());
-			/*	
-			 *  实时余额和实时交易数据现在都是每两个小时发送一次，所以两个定时任务就合在一起
-			 */
 			logger.info("-----账户余额邮件发送开始----");
 			List<DEmployeeModel> financialManagers = dEmployeeDao.select();
 	    	for(DEmployeeModel model : financialManagers){

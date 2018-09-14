@@ -63,10 +63,11 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 		
 		Map<String, Object> resultMap = tradeRealTimeDataDao.getTradeRealTimeData(begin.getTime(),
 				end.getTime(), thisMonthBegin.getTime(), thisMonthEnd.getTime());
+		
 		//获取所有投资者的用户余额
-		BigDecimal allInvestorAmount = threadService.exportMemberBalanceExcel();
+		/*BigDecimal allInvestorAmount = threadService.exportMemberBalanceExcel();
 		resultMap.put("allInvestorAmount", allInvestorAmount);
-		logger.info("用户专户余额为:"+allInvestorAmount);
+		logger.info("用户专户余额为:"+allInvestorAmount);*/
 		//BigDecimal allBorrowersAmount = threadService.getAllBorrowersAmount();
 		
 		//格式转换
@@ -121,7 +122,7 @@ public class TradeRealTimeDataServiceImpl implements TradeRealTimeDataService {
 		}else{
 			resultMap.put("paySuccessAmount", format3.format((new BigDecimal(0)).divide(new BigDecimal(10000)))+"万");
 		}
-		resultMap.put("balanceAllInvestorAmount", format3.format(allInvestorAmount.divide(new BigDecimal(10000)))+"万");
+		resultMap.put("balanceAllInvestorAmount", format3.format(((BigDecimal) resultMap.get("allInvestorAmount")).divide(new BigDecimal(10000)))+"万");
 		if(resultMap.get("regularInvestAmountOfMonth") != null){
 			resultMap.put("regularInvestAmountOfMonth", format3.format(((BigDecimal) resultMap.get("regularInvestAmountOfMonth")).divide(new BigDecimal(10000)))+"万");
 		}else{

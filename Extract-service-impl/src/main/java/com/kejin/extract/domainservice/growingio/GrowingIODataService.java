@@ -87,7 +87,7 @@ public class GrowingIODataService {
 		params.put("endTime", endTime +"");
 		params.put("interval", interval+"");
 
-		String s2= HttpsRequestUtil.sendHtpps("https://www.growingio.com/projects/"+project+"/charts/"+chartID+".json","GET",headers,params);  
+		String s2= HttpsRequestUtil.sendHtpps("https://www.growingio.com/v2/projects/"+project+"/charts/"+chartID+".json","GET",headers,params);  
         ChartBean cb = JSON.parseObject(s2, ChartBean.class);
         return cb;
 	}

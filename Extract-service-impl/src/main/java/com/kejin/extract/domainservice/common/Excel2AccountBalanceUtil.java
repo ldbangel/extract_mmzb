@@ -90,7 +90,7 @@ public class Excel2AccountBalanceUtil {
 			row.createCell(0).setCellValue((String) balanceList.get(i).get("memberId"));
 			row.createCell(1).setCellValue((String) balanceList.get(i).get("authName"));
 			row.createCell(2).setCellValue((String) balanceList.get(i).get("phoneNum"));
-			row.createCell(3).setCellValue(StringUtils.substringBefore((String) balanceList.get(i).get("balance"), "."));
+			row.createCell(3).setCellValue(StringUtils.substringBefore(balanceList.get(i).get("balance").toString(), "."));
 			if(balanceList.get(i).get("yestodayBalance")!=null){
 				row.createCell(4).setCellValue(((BigDecimal) balanceList.get(i).get("yestodayBalance")).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
 			}else{
@@ -125,6 +125,9 @@ public class Excel2AccountBalanceUtil {
 			}
 			if(balanceList.get(i).get("latestCashTime") != null){
 				row.createCell(12).setCellValue(balanceList.get(i).get("latestCashTime").toString());
+				if(balanceList.get(i).get("latestCashAmount") == null){
+					System.out.println("ok ");
+				}
 				row.createCell(13).setCellValue(((BigDecimal) balanceList.get(i).get("latestCashAmount")).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
 			}else{
 				row.createCell(12).setCellValue("");

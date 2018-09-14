@@ -3,29 +3,29 @@
 <mapper namespace="com.kejin.extract.kejin.process.dao.DAccountBalanceDao">
     
   <insert id="insertBalanceRecord" parameterType="java.util.List" >
-	    INSERT INTO `d_account_balance` (
-	    	settle_date,
-			memberId,
-			platform_user_no,
-			name,
-			phone,
-			balance,
-			gmt_create,
-			gmt_modified
+	 INSERT INTO `d_account_balance` (
+    	settle_date,
+		memberId,
+		platform_user_no,
+		name,
+		phone,
+		balance,
+		gmt_create,
+		gmt_modified
+	)
+	VALUES
+	<foreach collection="list" item="model"  separator="," >
+		(    
+			DATE_FORMAT(now(), '%Y%m%d%H'),
+		    #{model.memberId, jdbcType=VARCHAR},
+			#{model.platformUserNo, jdbcType=VARCHAR},
+			#{model.authName, jdbcType=VARCHAR},
+		    #{model.phoneNum, jdbcType=VARCHAR},
+		    #{model.balance, jdbcType=DECIMAL},
+		    now(),
+		    now()
 		)
-		VALUES
-		<foreach collection="list" item="model"  separator="," >
-			(    
-				DATE_FORMAT(now(), '%Y%m%d%H'),
-			    #{model.memberId, jdbcType=VARCHAR},
-				#{model.platformUserNo, jdbcType=VARCHAR},
-				#{model.authName, jdbcType=VARCHAR},
-			    #{model.phoneNum, jdbcType=VARCHAR},
-			    #{model.balance, jdbcType=DECIMAL},
-			    now(),
-			    now()
-			)
-		</foreach>  
+	</foreach> 
   </insert> 
 	
 </mapper>

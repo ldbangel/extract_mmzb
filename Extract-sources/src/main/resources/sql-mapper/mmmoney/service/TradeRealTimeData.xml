@@ -3,6 +3,14 @@
 <mapper namespace="com.kejin.extract.mmmoney.service.dao.TradeRealTimeDataDao">
  <select id="getTradeRealTimeData"  resultType="java.util.Map"> 
  	SELECT
+ 	(
+		SELECT
+			sum(available_amount)
+		FROM
+			custody_shbk.t_member_account
+		WHERE
+			userRole = 'INVESTOR'
+	) allInvestorAmount,
 	(
 		SELECT
 			sum(a.AMOUNT)
@@ -247,222 +255,42 @@
 					)
 			) a
 	) chargeAmount;
-	<!-- (
-		SELECT
-			count(*) '满标项目数'
-		FROM
-			loan.t_ls_trade_order a
-		WHERE
-			a.TRADE_TYPE = 'TRANSIT'
-		<if test="beginTime!=null">
-			<![CDATA[ AND a.TRADE_DATE >= #{beginTime} ]]>
-		</if>
-		<if test="endTime!=null">
-			<![CDATA[ AND a.TRADE_DATE < #{endTime} ]]>
-		</if>
-	) bidSuccessNum,
-	(
-		SELECT
-			sum(a.AMOUNT) '满标项目金额'
-		FROM
-			loan.t_ls_trade_order a
-		WHERE
-			a.TRADE_TYPE = 'TRANSIT'
-		<if test="beginTime!=null">
-			<![CDATA[ AND a.TRADE_DATE >= #{beginTime} ]]>
-		</if>
-		<if test="endTime!=null">
-			<![CDATA[ AND a.TRADE_DATE < #{endTime} ]]>
-		</if>
-	) bidSuccessAmount, 
-	(
-		SELECT
-			SUM(AMOUNT)
-		FROM
-			invest.t_bid_order
-		WHERE
-			`STATUS` = 'PAY_SUCCESS'
-	) paySuccessAmount; -->
-	<!-- (
-		SELECT
-			sum(a.AMOUNT)
-		FROM
-			invest.t_bid_order a
-		INNER JOIN invest.t_invest_subject b ON a.SUBJECT_NO = b.SUBJECT_NO
-		WHERE
-			a.SUBJECT_TYPE IN ('SUBJECT')
-		<if test="monthBeginTime != null">
-			<![CDATA[ AND a.CREATE_TIME >= #{monthBeginTime} ]]>
-		</if>
-		<if test="monthEndTime != null">
-			<![CDATA[ AND a.CREATE_TIME < #{monthEndTime} ]]>
-		</if>
-		AND a.STATUS IN (
-			'PAY_SUCCESS',
-			'BID_SUCCESS'
-		)
-		AND b. STATUS IN ('01', '05', '10', '15', '20')
-	) regularInvestAmountOfMonth, -->
-	<!-- (
-		SELECT
-			sum(a.balance)
-		FROM
-			(
-				SELECT
-					t3.memberid memberId,
-					t3.title authName,
-					d.identity phoneNum,
-					sum(t3.amount) balance
-				FROM
-					(
-						SELECT
-							d.memberId,
-							d.title,
-							sum(d.balance) amount
-						FROM
-							(
-								SELECT
-									IFNULL(b.memberid, c.memberId) memberId,
-									IFNULL(
-										b.realName,
-										c.enterpriseName
-									) title,
-									a.balance balance
-								FROM
-									custody_shbk.t_settle_balance a
-								LEFT JOIN custody_shbk.tr_custody_memberinfo b ON a.platformUserNo = b.platformUserNo
-								LEFT JOIN custody_shbk.t_enterprise_info c ON c.platformUserNo = a.platformUserNo
-								WHERE
-									a.settle_date = DATE_ADD(CURDATE(), INTERVAL - 1 DAY)
-								AND a.balance > 0
-							) d
-						GROUP BY
-							d.memberid
-						UNION
-							SELECT
-								t2.member_id memberid,
-								IFNULL(
-									b.realName,
-									c.enterpriseName
-								) title,
-								sum(
-									CASE direction
-									WHEN 1 THEN
-										amount
-									WHEN 2 THEN
-										- amount
-									END
-								) amount
-							FROM
-								invest.t_all_trade_order t2
-							LEFT JOIN (
-								SELECT
-									memberId,
-									max(realName) realName
-								FROM
-									custody_shbk.tr_custody_memberinfo
-								GROUP BY
-									memberId
-							) b ON t2.member_id = b.memberId
-							LEFT JOIN (
-								SELECT
-									memberId,
-									max(enterpriseName) enterpriseName
-								FROM
-									custody_shbk.t_enterprise_info
-								GROUP BY
-									memberId
-							) c ON t2.member_id = c.memberId
-							WHERE
-								t2.`status` = 'SUCCESS'
-							AND t2.gmt_time > DATE_ADD(CURDATE(), INTERVAL 0 DAY)
-							<![CDATA[ AND t2.gmt_time < DATE_ADD(CURDATE(), INTERVAL 1 DAY) ]]>
-							GROUP BY
-								t2.member_id
-							UNION
-								SELECT
-									a.member_id memberid,
-									IFNULL(
-										b.realName,
-										c.enterpriseName
-									) title,
-									sum(- amount) amount
-								FROM
-									invest.t_bid_order a
-								LEFT JOIN (
-									SELECT
-										memberId,
-										max(realName) realName
-									FROM
-										custody_shbk.tr_custody_memberinfo
-									GROUP BY
-										memberId
-								) b ON a.member_id = b.memberId
-								LEFT JOIN (
-									SELECT
-										memberId,
-										max(enterpriseName) enterpriseName
-									FROM
-										custody_shbk.t_enterprise_info
-									GROUP BY
-										memberId
-								) c ON a.member_id = c.memberId
-								WHERE
-									a.`status` = 'PAY_SUCCESS'
-								<![CDATA[ AND a.create_time < DATE_ADD(CURDATE(), INTERVAL 0 DAY) ]]>
-								GROUP BY
-									a.member_id
-								UNION
-									SELECT
-										a.member_id memberid,
-										IFNULL(
-											b.realName,
-											c.enterpriseName
-										) title,
-										sum(- amount) amount
-									FROM
-										invest.t_bid_order a
-									LEFT JOIN (
-										SELECT
-											memberId,
-											max(realName) realName
-										FROM
-											custody_shbk.tr_custody_memberinfo
-										GROUP BY
-											memberId
-									) b ON a.member_id = b.memberId
-									LEFT JOIN (
-										SELECT
-											memberId,
-											max(enterpriseName) enterpriseName
-										FROM
-											custody_shbk.t_enterprise_info
-										GROUP BY
-											memberId
-									) c ON a.member_id = c.memberId
-									WHERE
-										a.`status` = 'BID_SUCCESS'
-									<![CDATA[ AND a.create_time < DATE_ADD(CURDATE(), INTERVAL 0 DAY) ]]>
-									AND a.modified_time > DATE_ADD(CURDATE(), INTERVAL 0 DAY)
-									GROUP BY
-										a.member_id
-					) t3
-				LEFT JOIN member.tm_member_identity d ON t3.MEMBERID = d.MEMBER_ID
-				AND d.PID = 1
-				AND d.IDENTITY_TYPE = 2
-				WHERE
-					t3.memberId NOT IN (
-						'SYS_GENERATE_000',
-						'SYS_GENERATE_002',
-						'SYS_GENERATE_002',
-						'SYS_GENERATE_004'
-					)
-				AND t3.memberId NOT LIKE '2%'
-				GROUP BY
-					t3.memberid
-				ORDER BY
-					sum(t3.amount) DESC
-			) a
-	) balanceAllAmount; -->
  </select>
+ 
+ <select id="selectAccountBalance" resultType="java.util.Map">
+	SELECT
+		a.member_id memberId,
+		a.platform_user_no platformUserNo,
+		a.available_amount balance,
+		b.realName authName,
+		c.FINANCIAL_ADVISOR_A financialManagerId,
+		d.realName financialManager
+	FROM
+		custody_shbk.t_member_account a
+	LEFT JOIN (
+		SELECT
+			*
+		FROM
+			custody_shbk.tr_custody_bankinfo
+		WHERE
+			extend = 'INVESTOR'
+		GROUP BY
+			memberId
+	) b ON a.member_id = b.memberId
+	LEFT JOIN member.t_mama_user c ON a.member_id = c.MEMBER_ID
+	LEFT JOIN (
+		SELECT
+			*
+		FROM
+			custody_shbk.tr_custody_bankinfo
+		WHERE
+			bindCardFlag = '2'
+		AND extend = 'INVESTOR'
+	) d ON c.FINANCIAL_ADVISOR_A = d.memberId
+	WHERE
+		a.userRole = 'INVESTOR'
+	AND a.available_amount > 1000
+	ORDER BY
+		a.available_amount DESC;
+  </select>
 </mapper>
