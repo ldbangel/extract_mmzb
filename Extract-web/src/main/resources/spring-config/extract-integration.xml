@@ -2,7 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
     xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
     xmlns:util="http://www.springframework.org/schema/util"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans.xsd
